@@ -23,6 +23,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	// - amend and document design pattern decisions
 	// - amend and document attack vectors protections
 	// - beautify UI
+	// - verify and publish source code on etherscan
 	// - hosting
 	// - instructions: installing, running, tests
 	// - screencast

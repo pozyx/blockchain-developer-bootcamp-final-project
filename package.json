@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "@opengsn/provider": "^2.2.4"
+    "@opengsn/provider": "^2.2.4",
+    "@truffle/hdwallet-provider": "^1.6.0",
+    "dotenv": "^10.0.0"
   }
 }
