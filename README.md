@@ -51,3 +51,4 @@ Note: "Uploading document" in this context means only hashing the document on cl
 - Built-in notification between participants (email / push) on document state changes.
 - Persistence of the documents (IPFS / FileCoin or integration with traditional cloud services).
 - Ability to run arbitrary transaction (smart contract call, etc.) on document verification.
+- Using oracle for getting current time (safer and more accurate than block.timestamp).

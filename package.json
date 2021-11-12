@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@opengsn/provider": "^2.2.4"
+  }
+}
