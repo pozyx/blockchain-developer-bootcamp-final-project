@@ -62,6 +62,15 @@ module.exports = {
       network_id: 3,          // Ropsten's network id
       gas: 5500000,
     },
+    rinkeby: {
+      provider: () =>
+        new HDWalletProvider(
+          process.env.MNEMONIC,
+          `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`),
+      network_id: 4,          // Rinkeby's network id
+      gas: 4500000,
+      gasPrice: 10000000000,
+    },
     // Another network with more advanced options...
     // advanced: {
     // port: 8777,             // Custom port

@@ -14,16 +14,12 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
-	// - finish simple GSN tutorial & test (non UI) - incl. fundSigning, withdrawSigningFunds, relayed signDocumentIfFunded, chargeSignDocumentIfFundedCall
-	//   - 1 of two approaches:
-	//     - Simple Integration Walkthrough
-	//     - OpenGSN/SimpleUse
-	//   - local (fundSigning, withdrawSigningFunds done)
-	//   - testnet
-	// 	 - test skeleton - simple GSN call
 	// - implement & test 5 core functions
 	// - implement & test 4 GSN functions + paymaster
 	// - clean truffle-config.js
+	// - clean-up EthNOS.test.js
+	// - TODOs in launch.sh
+	// - develop with GSN in 2_deploy_contracts.js?
 	// - design UI
 	// - implement barebone UI (core)
 	//   - also see OpenGSN/SimpleUse
@@ -36,6 +32,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	// - hosting
 	// - instructions: installing, running, tests
 	// - screencast
+	// - details: remove .vscode?
 
 	// TODO: notes
 	// - do not call onlyowner methods from forwarder (do not set forwarder to accounts[0])
@@ -44,12 +41,15 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	// - await web3.eth.getBalance(accounts[0])
 	// - await web3.eth.getBalance(await ethNOSPaymaster.getHubAddr())
 	// - await ethNOS.fundSigning('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', {value: 5})
+	// - Run Ganache: net=`date "+%j%H%M%S"` && ganache-cli --networkId $net --chainId $net -v
+	// - Run GSN: gsn start
+	// - Run Truffle: truffle console
+	// - GSN worked on Rinkeby, not Ropsten
 
 	// TODO: variables
 
-	// TODO: ok version? or 2.2.0?
 	/// @inheritdoc IRelayRecipient
-	string public override versionRecipient = "2.4.0";
+	string public override versionRecipient = "2.2.4";
 
 	/// Paymaster contract which manages paying for transactions using GSN.
 	EthNOSPaymaster private ethNOSPaymaster;
@@ -248,7 +248,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		// TODO: unit tests
 
 		// TODO:
-		uint amount = 10;
+		uint amount = 1 ether;
 
 		ethNOSPaymaster.withdrawRelayHubDeposit(amount, payable(_msgSender()));
 	}
@@ -305,11 +305,11 @@ contract EthNOS is BaseRelayRecipient, Ownable
 
 		// TODO: call signDocument?
 
-		// TODO: remove
+		// TODO: temporary
 		signDocumentIfFundedCalled = true;
 	}
 
-	// TODO: remove
+	// TODO: temporary
 	bool public signDocumentIfFundedCalled;
 
 	/**
@@ -336,12 +336,12 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		// TODO: emit events
 		// TODO: unit tests
 
-		// TODO: remove
+		// TODO: temporary
 		chargeSignDocumentIfFundedCallCalledDocumentHash = documentHash;
 		chargeSignDocumentIfFundedCallAmountCharged = amountCharged;
 	}
 
-	// TODO: remove
+	// TODO: temporary
 	bytes32 public chargeSignDocumentIfFundedCallCalledDocumentHash;
 	uint256 public chargeSignDocumentIfFundedCallAmountCharged;
 

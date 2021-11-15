@@ -21,9 +21,8 @@ contract EthNOSPaymaster is BasePaymaster
 	/// Gas used by postRelayedCall, for proper gas calculation
 	uint public gasUsedByPost;
 
-	// TODO: ok version? or 2.2.0?
 	/// @inheritdoc IPaymaster
-	string public override versionPaymaster = "2.4.0";
+	string public override versionPaymaster = "2.2.4";
 
 	// TODO: needed?
 	// TODO: other params?

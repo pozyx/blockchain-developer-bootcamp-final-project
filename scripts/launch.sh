@@ -15,28 +15,31 @@ until curl -s -o/dev/null "$ETH_RPC_URL"; do
   fi
 done
 
-if [[ "$@" == *"gsn"* ]]; then
+# TODO: maybe not required?
+# if [[ "$@" == *"gsn"* ]]; then
 
-  npx gsn start > gsn.log 2>&1 & gsnpid=$!
+#   npx gsn start > gsn.log 2>&1 & gsnpid=$!
 
-  until grep '== startGSN: ready.' gsn.log  ; do
-    sleep 1
-    if [ -z "$(ps -p $gsnpid -o pid=)" ]; then
-      echo "Ganache stopped running. Check gsn.log for errors."
-      kill $netpid
-      exit 1
-    fi
-  done
+#   until grep '== startGSN: ready.' gsn.log  ; do
+#     sleep 1
+#     if [ -z "$(ps -p $gsnpid -o pid=)" ]; then
+#       echo "Ganache stopped running. Check gsn.log for errors."
+#       kill $netpid
+#       exit 1
+#     fi
+#   done
 
-  cat gsn.log
+#   cat gsn.log
 
-fi
+# fi
 
 # Stop the testnet when this script exits
 function cleanup()
 {
     kill $netpid $gsnpid
+    # TODO: sometimes errors with "no such process" or usage
     kill $(ps aux | grep "ganache-cli -p" | grep -v grep | awk '{print $2}')
+    kill $(ps aux | grep "gsn" | grep -v grep | awk '{print $2}')
 }
 
 trap cleanup EXIT

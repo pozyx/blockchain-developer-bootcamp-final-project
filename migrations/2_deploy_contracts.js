@@ -1,9 +1,14 @@
-var EthNOS = artifacts.require("./EthNOS.sol");
-var EthNOSPaymaster = artifacts.require("./EthNOSPaymaster.sol");
+const { GsnTestEnvironment } = require("@opengsn/cli/dist/GsnTestEnvironment");
+const EthNOS = artifacts.require("./EthNOS.sol");
+const EthNOSPaymaster = artifacts.require("./EthNOSPaymaster.sol");
 
 module.exports = async function(deployer, network, accounts)
 {
-	process.env.NETWORK = deployer.network;
+	process.env.NETWORK = deployer.network; // to be used in tests
+
+	let relayHub;
+	let forwarder;
+	let useGSN;
 
 	if (network == "live" || network == "live-fork")
 	{
@@ -19,17 +24,18 @@ module.exports = async function(deployer, network, accounts)
 		forwarder = '0xeB230bF62267E94e657b5cbE74bdcea78EB3a5AB';
 		useGSN = true;
 	}
+	else if (network == "rinkeby" || network == "rinkeby-fork")
+	{
+		// from https://docs.opengsn.org/contracts/addresses.html#ethereum
+		relayHub = '0x6650d69225CA31049DB7Bd210aE4671c0B1ca132';
+		forwarder = '0x83A54884bE4657706785D7309cf46B58FE5f6e8a';
+		useGSN = true;
+	}
 	else if (network == "test_with_gsn")
 	{
-		// TODO:
-		// 1. Run Ganache: net=`date "+%j%H%M%S"` && ganache-cli --networkId $net --chainId $net -v
-		// 2. Run GSN: gsn start
-		// 3. Set below relayHub and forwarder from step 2
-		// 4. Run Truffle: truffle console
-		// 5. migrate
-		relayHub = '0x7497eB06A861b7090C2ec5e7704bDe874e769ea4';
-		// const forwarder = require("../build/gsn/Forwarder").address // TODO: or this?
-		forwarder = '0x970189a924a3f55Cbb4fC5ac66769713Df1d8902';
+		const env = await GsnTestEnvironment.startGsn('localhost');
+		forwarder = env.contractsDeployment.forwarderAddress;
+		relayHub = env.contractsDeployment.relayHubAddress;
 		useGSN = true;
 	}
 	else if (network == "test")
@@ -48,18 +54,18 @@ module.exports = async function(deployer, network, accounts)
 	}
 
 	await deployer.deploy(EthNOS);
-	var ethNOS = await EthNOS.deployed();
+	const ethNOS = await EthNOS.deployed();
 
 	if (useGSN)
 	{
 		await deployer.deploy(EthNOSPaymaster);
-		var ethNOSPaymaster = await EthNOSPaymaster.deployed();
+		const ethNOSPaymaster = await EthNOSPaymaster.deployed();
 
 		await ethNOS.setTrustedForwarder(forwarder);
 		await ethNOS.setEthNOSPaymaster(ethNOSPaymaster.address)
 
 		// TODO: Use TokenGasCalculator to calculate these values (they depend on actual code of postRelayedCall).
-		var postGasUsage = 42;
+		const postGasUsage = 42;
 		await ethNOSPaymaster.setPostGasUsage(postGasUsage);
 		await ethNOSPaymaster.setRelayHub(relayHub);
 		await ethNOSPaymaster.setTrustedForwarder(forwarder);
