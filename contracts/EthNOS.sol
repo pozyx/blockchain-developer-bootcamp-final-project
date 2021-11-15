@@ -45,14 +45,8 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	// - Run GSN: gsn start
 	// - Run Truffle: truffle console
 	// - GSN worked on Rinkeby, not Ropsten
-
-	// TODO: variables
-
-	/// @inheritdoc IRelayRecipient
-	string public override versionRecipient = "2.2.4";
-
-	/// Paymaster contract which manages paying for transactions using GSN.
-	EthNOSPaymaster private ethNOSPaymaster;
+	// - ethNOS.signDocument('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', { from: accounts[1] });
+	// - ethNOS.verifyDocument('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
 
 	/// Certification state of document.
 	enum CertificationState
@@ -94,6 +88,25 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		 */
 		uint certificationTime;
 	}
+
+	/// Represents all signing and certification information for the document.
+	struct DocumentInfo
+	{
+		// TODO:
+		SigningInfo[] signatures;
+		mapping (address => SigningInfo) signaturesForSignatories;
+	}
+
+	/// @inheritdoc IRelayRecipient
+	string public override versionRecipient = "2.2.4";
+
+	/// Paymaster contract which manages paying for transactions using GSN.
+	EthNOSPaymaster private ethNOSPaymaster;
+
+	// TODO: variables
+
+	/// Signing and certification information for all documents (key is keccak256 hash of the document).
+	mapping (bytes32 => DocumentInfo) private documents;
 
 	/**
 	 * Sets trusted forwarder for transactions using GSN.
@@ -271,9 +284,25 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		bytes32 documentHash)
 		external
 	{
-		// TODO: implement
+		// TODO: implement - finish
 		// TODO: emit events
 		// TODO: unit tests
+
+		DocumentInfo storage document = documents[documentHash];
+
+		if (document.signaturesForSignatories[_msgSender()].signTime != 0)
+			revert(); // already signed by sender
+
+		SigningInfo memory signingInfo = SigningInfo(
+		{
+			signatory: _msgSender(),
+			signTime: block.timestamp
+		});
+
+		document.signaturesForSignatories[_msgSender()] = signingInfo;
+		document.signatures.push(signingInfo);
+
+		// TODO: re-evaluate certification
 	}
 
 	/**
@@ -372,6 +401,9 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		// TODO: emit events?
 		// TODO: unit tests
 
+		//--
+		DocumentInfo storage document = documents[documentHash];
+
 		// TODO: temporary
 		SigningInfo[] memory signatures = new SigningInfo[](2);
 		signatures[0] = SigningInfo(
@@ -395,7 +427,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 				certificationTime: 0
 			}),
 			new CertificationInfo[](0),
-			new SigningInfo[](0));
+			document.signatures);
 	}
 
 	// @dev This is to fix multiple inheritance conflict.
