@@ -76,7 +76,7 @@ contract EthNOSPaymaster is BasePaymaster
 		// TODO: only allow signDocumentPendingCertification call
 
 		// TODO:
-		bytes32 documentHash = 0;
+		bytes32 documentHash = 0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53;
 
 		emit PreRelayed(documentHash);
 
@@ -116,12 +116,14 @@ contract EthNOSPaymaster is BasePaymaster
 	 * (Only allowed to be called by EthNOS contract.)
 	 *
 	 * @param amount Required amount to withdraw.
+	 * @param dest Address to withdraw to.
 	 */
 	function withdrawRelayHubDeposit(
-		uint amount)
+		uint amount,
+		address payable dest)
 		external
 	{
 		require(_msgSender() == address(ethNOS), "Only EthNOS contract is allowed to withdraw!");
-        relayHub.withdraw(amount, payable(_msgSender()));
+        relayHub.withdraw(amount, dest);
     }
 }

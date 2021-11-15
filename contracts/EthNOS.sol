@@ -14,11 +14,20 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
-	// - finish simple GSN tutorial & test (non UI) - incl. fundSigning, withdrawSigningFunds, relayed signDocumentPendingCertification, chargeSignDocumentIfFundedCall
+	// - finish simple GSN tutorial & test (non UI) - incl. fundSigning, withdrawSigningFunds, relayed signDocumentIfFunded, chargeSignDocumentIfFundedCall
+	//   - 1 of two approaches:
+	//     - Simple Integration Walkthrough
+	//     - OpenGSN/SimpleUse
+	//   - local (fundSigning, withdrawSigningFunds done)
+	//   - testnet
+	// 	 - test skeleton - simple GSN call
 	// - implement & test 5 core functions
 	// - implement & test 4 GSN functions + paymaster
+	// - clean truffle-config.js
 	// - design UI
 	// - implement barebone UI (core)
+	//   - also see OpenGSN/SimpleUse
+	//   - also see OpenGSN React app
 	// - implement barebone UI (GSN)
 	// - amend and document design pattern decisions
 	// - amend and document attack vectors protections
@@ -29,8 +38,12 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	// - screencast
 
 	// TODO: notes
-	// - bytes32 testing - '0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53'
 	// - do not call onlyowner methods from forwarder (do not set forwarder to accounts[0])
+	// - use yarn (opengsn was not buildable in npm)
+	// - node_modules/@opengsn/dev/package.json: "main": "dist/index.js" changed to "main": "dist/src/index.js"
+	// - await web3.eth.getBalance(accounts[0])
+	// - await web3.eth.getBalance(await ethNOSPaymaster.getHubAddr())
+	// - await ethNOS.fundSigning('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', {value: 5})
 
 	// TODO: variables
 
@@ -208,8 +221,13 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		// TODO: emit events
 		// TODO: unit tests
 
+		require(msg.value > 0, "No ether provided");
+
 		// sends ether to paymaster (it will be forwarded to relay hub)
-		payable(ethNOSPaymaster).transfer(msg.value); // TODO: is transfer ok or really not recommended?
+		//payable(ethNOSPaymaster).transfer(msg.value); // TODO: this fails for some reason
+		(bool sent, bytes memory data) = payable(ethNOSPaymaster).call{value: msg.value}("");
+		(data);
+        require(sent, "Failed to fund paymaster / relay hub");
 	}
 
 	/**
@@ -232,9 +250,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		// TODO:
 		uint amount = 10;
 
-		// TODO: can be done this way?
-		ethNOSPaymaster.withdrawRelayHubDeposit(amount);
-		payable(_msgSender()).transfer(amount); // TODO: is transfer ok or really not recommended?
+		ethNOSPaymaster.withdrawRelayHubDeposit(amount, payable(_msgSender()));
 	}
 
 	/**
@@ -288,7 +304,13 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		// TODO: unit tests
 
 		// TODO: call signDocument?
+
+		// TODO: remove
+		signDocumentIfFundedCalled = true;
 	}
+
+	// TODO: remove
+	bool public signDocumentIfFundedCalled;
 
 	/**
 	 * Charges ether used for ether-less document signing.
@@ -313,7 +335,15 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		// TODO: implement
 		// TODO: emit events
 		// TODO: unit tests
+
+		// TODO: remove
+		chargeSignDocumentIfFundedCallCalledDocumentHash = documentHash;
+		chargeSignDocumentIfFundedCallAmountCharged = amountCharged;
 	}
+
+	// TODO: remove
+	bytes32 public chargeSignDocumentIfFundedCallCalledDocumentHash;
+	uint256 public chargeSignDocumentIfFundedCallAmountCharged;
 
 	/**
 	 * Returns certification state of given document along with

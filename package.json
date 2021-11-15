@@ -2,6 +2,15 @@
   "dependencies": {
     "@opengsn/provider": "^2.2.4",
     "@truffle/hdwallet-provider": "^1.6.0",
-    "dotenv": "^10.0.0"
+    "dotenv": "^10.0.0",
+    "ethers": "^5.5.1"
+  },
+  "devDependencies": {
+    "@opengsn/dev": "^2.2.4",
+    "web3": "^1.6.0"
+  },
+  "scripts": {
+    "test": "./scripts/launch.sh npx truffle test --network test",
+    "test_with_gsn": "./scripts/launch.sh npx truffle test --network test_with_gsn"
   }
 }
