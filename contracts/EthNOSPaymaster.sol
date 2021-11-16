@@ -18,18 +18,16 @@ contract EthNOSPaymaster is BasePaymaster
 	/// EthNOS contract paymaster will pay for.
 	EthNOS private ethNOS;
 
-	/// Gas used by postRelayedCall, for proper gas calculation
+	/// Gas used by postRelayedCall, for proper gas calculation.
 	uint public gasUsedByPost;
 
 	/// @inheritdoc IPaymaster
 	string public override versionPaymaster = "2.2.4";
 
-	// TODO: needed?
 	// TODO: other params?
 	/// Event emited before transaction is relayed.
 	event PreRelayed(bytes32 documentHash);
 
-	// TODO: needed?
 	// TODO: other params?
 	/// Event emited after transaction is relayed.
 	event PostRelayed(bytes32 documentHash);
@@ -63,18 +61,19 @@ contract EthNOSPaymaster is BasePaymaster
 		bytes calldata approvalData,
 		uint256 maxPossibleGas) // TODO: understand
 		external
-		override virtual
+		override
+		virtual
+		relayHubOnly
 		returns (bytes memory context, bool)
 	{
 		_verifyForwarder(relayRequest);
-
-		(signature, approvalData, maxPossibleGas);
-
 		require(relayRequest.request.to == address(ethNOS));
 
 		// TODO: only allow signDocumentPendingCertification call
 
-		// TODO:
+		(signature, approvalData, maxPossibleGas);
+
+		// TODO: parse documentHash
 		bytes32 documentHash = 0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53;
 
 		emit PreRelayed(documentHash);
@@ -93,7 +92,9 @@ contract EthNOSPaymaster is BasePaymaster
 		uint256 gasUseWithoutPost,
 		GsnTypes.RelayData calldata relayData)
 		external
-		override virtual
+		override
+		virtual
+		relayHubOnly
 	{
 		// TODO: really don't use success?
 		(success);
@@ -122,7 +123,7 @@ contract EthNOSPaymaster is BasePaymaster
 		address payable dest)
 		external
 	{
-		require(_msgSender() == address(ethNOS), "Only EthNOS contract is allowed to withdraw!");
+		require(_msgSender() == address(ethNOS), "Only EthNOS contract is allowed to withdraw");
         relayHub.withdraw(amount, dest);
     }
 }

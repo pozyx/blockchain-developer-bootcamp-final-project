@@ -74,13 +74,13 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	/// Represents pending or completed act of certification of the document.
 	struct CertificationInfo
 	{
-		/// Required signatures - signatories with times of signing the document (if signed).
-		SigningInfo[] signatures;
 		/**
 		 * Time of document submission / amendment.
 		 * @dev seconds since unix epoch
 		 */
 		uint submissionTime;
+		/// Required signatures - signatories with times of signing the document (if signed).
+		SigningInfo[] signatures;
 		/**
 		 * Time of document certification (time when document is signed by all required
 		 * signatories). Zero if certification is pending.
@@ -92,8 +92,18 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	/// Represents all signing and certification information for the document.
 	struct DocumentInfo
 	{
-		// TODO:
+		// Account which submitted the document for certification.
+		address submitter;
+		// Certification state of the document.
+		CertificationState certificationState;
+		// Current certification information of the document.
+		CertificationInfo currentCertification;
+		// Historical certification information of the document (if certification was amended).
+		CertificationInfo[] pastCertifications;
+
+		// All signatures of the document.
 		SigningInfo[] signatures;
+		// All signatures of the document (key is signatory address).
 		mapping (address => SigningInfo) signaturesForSignatories;
 	}
 
@@ -107,6 +117,17 @@ contract EthNOS is BaseRelayRecipient, Ownable
 
 	/// Signing and certification information for all documents (key is keccak256 hash of the document).
 	mapping (bytes32 => DocumentInfo) private documents;
+
+	/**
+	 * Check document hash is not empty.
+	 *
+	 * @param documentHash Keccak256 hash of the document.
+	 */
+	modifier documentValid(bytes32 documentHash)
+	{
+		require(documentHash != 0, "Invalid document hash");
+		_;
+  	}
 
 	/**
 	 * Sets trusted forwarder for transactions using GSN.
@@ -149,13 +170,33 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		address[] calldata requiredSignatories)
 		external
 		payable
+		documentValid(documentHash)
 	{
-		// TODO: implement
+		// TODO: implement - finish
 		// TODO: emit events
 		// TODO: unit tests
 
-		// TODO: if conditions are met
-		fundSigning(documentHash);
+		DocumentInfo storage document = documents[documentHash];
+
+		require(document.submitter == address(0), "Document was already submitted");
+
+		document.submitter = _msgSender();
+		document.currentCertification.submissionTime = block.timestamp;
+
+		for (uint i = 0; i < requiredSignatories.length; i++)
+		{
+			document.currentCertification.signatures.push(
+				SigningInfo(
+				{
+					signatory: requiredSignatories[i],
+					signTime: 0
+				}));
+		}
+
+		// TODO: re-evaluate certification (certificationState, currentCertification, pastCertifications)
+
+		if (msg.value > 0)
+			fundSigning(documentHash);
 	}
 
 	/**
@@ -183,13 +224,17 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		address[] calldata requiredSignatories)
 		external
 		payable
+		documentValid(documentHash)
 	{
+		// TODO: input check (document hash, sender)
 		// TODO: implement
 		// TODO: emit events
 		// TODO: unit tests
 
-		// TODO: if conditions are met
-		fundSigning(documentHash);
+		// TODO: re-evaluate certification (certificationState, currentCertification, pastCertifications)
+
+		if (msg.value > 0)
+			fundSigning(documentHash);
 	}
 
 	/**
@@ -209,10 +254,14 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	function deleteDocumentSubmission(
 		bytes32 documentHash)
 		external
+		documentValid(documentHash)
 	{
+		// TODO: input check (document hash, sender)
 		// TODO: implement
 		// TODO: emit events
 		// TODO: unit tests
+
+		// TODO: re-evaluate certification? (certificationState, currentCertification, pastCertifications)
 	}
 
 	// TODO: can required amount be calculated?
@@ -229,7 +278,9 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		bytes32 documentHash)
 		public
 		payable
+		documentValid(documentHash)
 	{
+		// TODO: input check (document hash, sender)
 		// TODO: implement
 		// TODO: emit events
 		// TODO: unit tests
@@ -237,7 +288,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		require(msg.value > 0, "No ether provided");
 
 		// sends ether to paymaster (it will be forwarded to relay hub)
-		//payable(ethNOSPaymaster).transfer(msg.value); // TODO: this fails for some reason
 		(bool sent, bytes memory data) = payable(ethNOSPaymaster).call{value: msg.value}("");
 		(data);
         require(sent, "Failed to fund paymaster / relay hub");
@@ -255,7 +305,9 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	function withdrawSigningFunds(
 		bytes32 documentHash)
 		external
+		documentValid(documentHash)
 	{
+		// TODO: input check (document hash, sender)
 		// TODO: implement
 		// TODO: emit events
 		// TODO: unit tests
@@ -282,7 +334,8 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	 */
 	function signDocument(
 		bytes32 documentHash)
-		external
+		public
+		documentValid(documentHash)
 	{
 		// TODO: implement - finish
 		// TODO: emit events
@@ -302,7 +355,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		document.signaturesForSignatories[_msgSender()] = signingInfo;
 		document.signatures.push(signingInfo);
 
-		// TODO: re-evaluate certification
+		// TODO: re-evaluate certification (certificationState, currentCertification, pastCertifications)
 	}
 
 	/**
@@ -325,14 +378,16 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	function signDocumentIfFunded(
 		bytes32 documentHash)
 		external
+		documentValid(documentHash)
 	{
+		// TODO: input check (document hash, sender)
 		// TODO: check funding
-
 		// TODO: implement
 		// TODO: emit events
 		// TODO: unit tests
 
-		// TODO: call signDocument?
+		// TODO: ok?
+		signDocument(documentHash);
 
 		// TODO: temporary
 		signDocumentIfFundedCalled = true;
@@ -360,7 +415,9 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		bytes32 documentHash,
 		uint256 amountCharged)
 		external
+		documentValid(documentHash)
 	{
+		// TODO: input check (document hash, sender)
 		// TODO: implement
 		// TODO: emit events
 		// TODO: unit tests
@@ -388,8 +445,9 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	 */
 	function verifyDocument(
 		bytes32 documentHash)
-		external view
-		// TODO: memory of return variables is ok?
+		external
+		view
+		documentValid(documentHash)
 		returns (
 			CertificationState certificationState,
 			address submitter,
@@ -397,37 +455,17 @@ contract EthNOS is BaseRelayRecipient, Ownable
 			CertificationInfo[] memory pastCertifications,
 			SigningInfo[] memory orphanedSignatures)
 	{
-		// TODO: implement
-		// TODO: emit events?
+		// TODO: implement - finish
 		// TODO: unit tests
 
-		//--
 		DocumentInfo storage document = documents[documentHash];
 
-		// TODO: temporary
-		SigningInfo[] memory signatures = new SigningInfo[](2);
-		signatures[0] = SigningInfo(
-		{
-			signatory: _msgSender(),
-			signTime: block.timestamp
-		});
-		signatures[1] = SigningInfo(
-		{
-			signatory: _msgSender(),
-			signTime: block.timestamp
-		});
-
 		return(
-			CertificationState.Certified,
-			_msgSender(),
-			CertificationInfo(
-			{
-				signatures: signatures,
-				submissionTime: block.timestamp,
-				certificationTime: 0
-			}),
-			new CertificationInfo[](0),
-			document.signatures);
+			document.certificationState,
+			document.submitter,
+			document.currentCertification,
+			document.pastCertifications,
+			document.signatures); // TODO:
 	}
 
 	// @dev This is to fix multiple inheritance conflict.
