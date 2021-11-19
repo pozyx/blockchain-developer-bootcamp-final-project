@@ -14,8 +14,8 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
-	// - implement & test 5 core functions
-	// - implement & test 5 GSN functions + paymaster
+	// - implement & TODOs in 5 GSN functions + paymaster
+	// - TODOs in 5 core functions
 	// - clean truffle-config.js
 	// - clean-up EthNOS.test.js
 	// - TODOs in launch.sh
@@ -53,8 +53,10 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	{
 		/// Document was not submitted for certification.
 		NotSubmitted,
+
 		/// Document is pending certification. Some required signatories did not sign the document yet.
 		CertificationPending,
+
 		/// Document is certified. All required signatories (if applicable) did sign the document.
 		Certified
 	}
@@ -64,6 +66,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	{
 		/// Address of signatory.
 		address signatory;
+
 		/**
 		 * Time of signing. Zero if not signed.
 		 * @dev seconds since unix epoch
@@ -79,8 +82,10 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		 * @dev seconds since unix epoch
 		 */
 		uint submissionTime;
-		/// Required signatures - signatories with times of signing the document (if signed).
-		SigningInfo[] signatures; // TODO: addresses sufficient! redundant
+
+		/// Signatories required for certification.
+		address[] requiredSignatories;
+
 		/**
 		 * Time of document certification (time when document is signed by all required
 		 * signatories). Zero if certification is pending.
@@ -94,15 +99,19 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	{
 		// Account which submitted the document for certification. Zero if not submitted yet.
 		address submitter;
+
 		// Certification state of the document.
 		CertificationState certificationState;
+
 		// Current certification information of the document.
 		CertificationInfo currentCertification;
+
 		// Historical certification information of the document (if certification was amended).
 		CertificationInfo[] pastCertifications;
 
 		// All signatures of the document.
 		SigningInfo[] signatures;
+
 		// All signatures of the document (key is signatory address).
 		mapping (address => SigningInfo) signaturesForSignatories;
 	}
@@ -191,6 +200,8 @@ contract EthNOS is BaseRelayRecipient, Ownable
 
 		require(document.submitter == address(0), "Document was already submitted");
 
+		document.submitter = _msgSender();
+
 		submitDocumentInternal(
 			document,
 			documentHash,
@@ -250,45 +261,10 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	{
 		// TODO: emit events?
 
-		document.submitter = _msgSender();
 		document.currentCertification.submissionTime = block.timestamp;
+		document.currentCertification.requiredSignatories = requiredSignatories;
 
-		for (uint i = 0; i < requiredSignatories.length; i++)
-		{
-			document.currentCertification.signatures.push(
-				SigningInfo(
-				{
-					signatory: requiredSignatories[i],
-					signTime: 0
-				}));
-		}
-
-		bool shouldBeCertified = true;
-
-		for (uint i = 0; i < document.currentCertification.signatures.length; i++)
-		{
-			SigningInfo storage requiredSignature = document.currentCertification.signatures[i];
-
-			if (requiredSignature.signTime == 0)
-			{
-				SigningInfo storage recordedSignature = document.signaturesForSignatories[requiredSignature.signatory];
-
-				if (recordedSignature.signatory != address(0))
-				{
-					requiredSignature.signTime = recordedSignature.signTime;
-				}
-				else
-				{
-					shouldBeCertified = false;
-				}
-			}
-		}
-
-		if (shouldBeCertified)
-		{
-			document.certificationState = CertificationState.Certified;
-			document.currentCertification.certificationTime = block.timestamp;
-		}
+		evaluateCertification(document);
 
 		if (msg.value > 0)
 			fundSigning(documentHash);
@@ -449,32 +425,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		document.signatures.push(newSignature);
 
 		if (document.certificationState == CertificationState.CertificationPending)
-		{
-			bool shouldBeCertified = true;
-
-			for (uint i = 0; i < document.currentCertification.signatures.length; i++)
-			{
-				SigningInfo storage requiredSignature = document.currentCertification.signatures[i];
-
-				if (requiredSignature.signTime == 0)
-				{
-					if (requiredSignature.signatory == newSignature.signatory)
-					{
-						requiredSignature.signTime = newSignature.signTime;
-					}
-					else
-					{
-						shouldBeCertified = false;
-					}
-				}
-			}
-
-			if (shouldBeCertified)
-			{
-				document.certificationState = CertificationState.Certified;
-				document.currentCertification.certificationTime = block.timestamp;
-			}
-		}
+			evaluateCertification(document);
 	}
 
 	/**
@@ -557,7 +508,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	 * @param documentHash Keccak256 hash of the document (computed off-chain).
 	 *
 	 * @return certificationState Certification state.
-	 * @return submitter Submitter of the certification. Zero if certificationState = NotSubmitted.
+	 * @return submitter Submitter of the certification. Zero if certificationState = NotSubmitted (and not deleted).
 	 * @return currentCertification Current pending or completed certification information.
 	 * @return pastCertifications Historical completed certifications (if submission was amended).
 	 * @return signatures Signatures (including signatures not required by certification).
@@ -602,5 +553,30 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		returns (bytes calldata)
 	{
 		return BaseRelayRecipient._msgData();
+	}
+
+	function evaluateCertification(
+		DocumentInfo storage document)
+		private
+	{
+		bool shouldBeCertified = true;
+
+		for (uint i = 0; i < document.currentCertification.requiredSignatories.length; i++)
+		{
+			address requiredSignatory = document.currentCertification.requiredSignatories[i];
+
+			SigningInfo storage recordedSignature = document.signaturesForSignatories[requiredSignatory];
+
+			if (recordedSignature.signatory == address(0))
+			{
+				shouldBeCertified = false;
+			}
+		}
+
+		if (shouldBeCertified)
+		{
+			document.certificationState = CertificationState.Certified;
+			document.currentCertification.certificationTime = block.timestamp;
+		}
 	}
 }
