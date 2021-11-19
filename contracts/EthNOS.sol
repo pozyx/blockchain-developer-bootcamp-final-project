@@ -15,7 +15,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
 	// - implement & test 5 core functions
-	// - implement & test 4 GSN functions + paymaster
+	// - implement & test 5 GSN functions + paymaster
 	// - clean truffle-config.js
 	// - clean-up EthNOS.test.js
 	// - TODOs in launch.sh
@@ -30,7 +30,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	// - beautify UI
 	// - verify and publish source code on etherscan
 	// - hosting
-	// - instructions: installing, running, tests
+	// - instructions: installing, running, tests, document state chart?
 	// - screencast
 	// - details: remove .vscode?
 
@@ -80,7 +80,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		 */
 		uint submissionTime;
 		/// Required signatures - signatories with times of signing the document (if signed).
-		SigningInfo[] signatures;
+		SigningInfo[] signatures; // TODO: addresses sufficient! redundant
 		/**
 		 * Time of document certification (time when document is signed by all required
 		 * signatories). Zero if certification is pending.
@@ -92,7 +92,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	/// Represents all signing and certification information for the document.
 	struct DocumentInfo
 	{
-		// Account which submitted the document for certification.
+		// Account which submitted the document for certification. Zero if not submitted yet.
 		address submitter;
 		// Certification state of the document.
 		CertificationState certificationState;
@@ -130,6 +130,17 @@ contract EthNOS is BaseRelayRecipient, Ownable
   	}
 
 	/**
+	 * Check caller is document submitter.
+	 *
+	 * @param documentHash Keccak256 hash of the document.
+	 */
+	modifier onlySubmitter(bytes32 documentHash)
+	{
+		require(documents[documentHash].submitter == _msgSender(), "Caller is not document submitter or document was not submitted");
+		_;
+	}
+
+	/**
 	 * Sets trusted forwarder for transactions using GSN.
 	 *
 	 * @param _trustedForwarder Trusted forwarder for transactions using GSN.
@@ -160,7 +171,8 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	 * if no signatories are required or if the document was already signed by all required
 	 * signatories (see signDocument).
 	 *
-	 * Can receive ether - if not zero, then paymaster will be funded to allow ether-less signing (see fundSigning).
+	 * Can receive ether - if not zero, then paymaster will be funded to allow ether-less signing (see fundSigning) -
+	 * only allowed when document is not immediately certified.
 	 *
 	 * @param documentHash Keccak256 hash of the document (computed off-chain). (Previously submitted documents are not allowed.)
 	 * @param requiredSignatories Addresses of required signatories (can be empty if only proof of existence is required).
@@ -172,31 +184,17 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		payable
 		documentValid(documentHash)
 	{
-		// TODO: implement - finish
-		// TODO: emit events
+		// TODO: emit events?
 		// TODO: unit tests
 
 		DocumentInfo storage document = documents[documentHash];
 
 		require(document.submitter == address(0), "Document was already submitted");
 
-		document.submitter = _msgSender();
-		document.currentCertification.submissionTime = block.timestamp;
-
-		for (uint i = 0; i < requiredSignatories.length; i++)
-		{
-			document.currentCertification.signatures.push(
-				SigningInfo(
-				{
-					signatory: requiredSignatories[i],
-					signTime: 0
-				}));
-		}
-
-		// TODO: re-evaluate certification (certificationState, currentCertification, pastCertifications)
-
-		if (msg.value > 0)
-			fundSigning(documentHash);
+		submitDocumentInternal(
+			document,
+			documentHash,
+			requiredSignatories);
 	}
 
 	/**
@@ -214,7 +212,8 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	 * if no signatories are required or if the document was already signed by all required
 	 * signatories (see signDocument).
 	 *
-	 * Can receive ether - if not zero, then paymaster will be funded to allow ether-less signing (see fundSigning).
+	 * Can receive ether - if not zero, then paymaster will be funded to allow ether-less signing (see fundSigning) -
+	 * only allowed when document is not immediately certified.
 	 *
 	 * @param documentHash Keccak256 hash of the document (computed off-chain). (Only previously submitted documents are allowed.)
 	 * @param requiredSignatories Addresses of required signatories (can be empty if only proof of existence is required).
@@ -225,13 +224,71 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		external
 		payable
 		documentValid(documentHash)
+		onlySubmitter(documentHash)
 	{
-		// TODO: input check (document hash, sender)
-		// TODO: implement
-		// TODO: emit events
+		// TODO: emit events?
 		// TODO: unit tests
 
-		// TODO: re-evaluate certification (certificationState, currentCertification, pastCertifications)
+		DocumentInfo storage document = documents[documentHash];
+
+		if (document.certificationState == CertificationState.Certified)
+			document.pastCertifications.push(document.currentCertification);
+
+		delete document.currentCertification;
+
+		submitDocumentInternal(
+			document,
+			documentHash,
+			requiredSignatories);
+	}
+
+	function submitDocumentInternal(
+		DocumentInfo storage document,
+		bytes32 documentHash,
+		address[] calldata requiredSignatories)
+		private
+	{
+		// TODO: emit events?
+
+		document.submitter = _msgSender();
+		document.currentCertification.submissionTime = block.timestamp;
+
+		for (uint i = 0; i < requiredSignatories.length; i++)
+		{
+			document.currentCertification.signatures.push(
+				SigningInfo(
+				{
+					signatory: requiredSignatories[i],
+					signTime: 0
+				}));
+		}
+
+		bool shouldBeCertified = true;
+
+		for (uint i = 0; i < document.currentCertification.signatures.length; i++)
+		{
+			SigningInfo storage requiredSignature = document.currentCertification.signatures[i];
+
+			if (requiredSignature.signTime == 0)
+			{
+				SigningInfo storage recordedSignature = document.signaturesForSignatories[requiredSignature.signatory];
+
+				if (recordedSignature.signatory != address(0))
+				{
+					requiredSignature.signTime = recordedSignature.signTime;
+				}
+				else
+				{
+					shouldBeCertified = false;
+				}
+			}
+		}
+
+		if (shouldBeCertified)
+		{
+			document.certificationState = CertificationState.Certified;
+			document.currentCertification.certificationTime = block.timestamp;
+		}
 
 		if (msg.value > 0)
 			fundSigning(documentHash);
@@ -242,12 +299,12 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	 *
 	 * Only allowed to be called by document submitter.
 	 * Document must be pending to be certified (note that also previously certified
-	 * document can be pending for certification again due to submission amendment).
+	 * document can be pending certification again due to submission amendment).
 	 *
 	 * If the document was already signed, the records will be retained;
 	 * also if the document was already certified (signed by all signatories),
 	 * the certification will be retained - these acts are irrevokable.
-	 * Instead, the document will be not pending for signing any more.
+	 * Instead, the document will be not pending signing any more.
 	 *
 	 * @param documentHash Keccak256 hash of the document (computed off-chain). (Only previously submitted documents are allowed.)
 	 */
@@ -255,13 +312,26 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		bytes32 documentHash)
 		external
 		documentValid(documentHash)
+		onlySubmitter(documentHash)
 	{
-		// TODO: input check (document hash, sender)
-		// TODO: implement
 		// TODO: emit events
 		// TODO: unit tests
 
-		// TODO: re-evaluate certification? (certificationState, currentCertification, pastCertifications)
+		DocumentInfo storage document = documents[documentHash];
+
+		require(document.certificationState == CertificationState.CertificationPending, "Document is not pending certification");
+
+		if (document.pastCertifications.length == 0)
+		{
+			delete document.currentCertification;
+			document.certificationState = CertificationState.NotSubmitted;
+		}
+		else
+		{
+			document.currentCertification = document.pastCertifications[document.pastCertifications.length - 1];
+			document.pastCertifications.pop();
+			document.certificationState = CertificationState.Certified;
+		}
 	}
 
 	// TODO: can required amount be calculated?
@@ -302,7 +372,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	 *
 	 * @param documentHash Keccak256 hash of the document (computed off-chain). (Only previously submitted documents are allowed.)
 	 */
-	function withdrawSigningFunds(
+	function withdrawSigningBalance(
 		bytes32 documentHash)
 		external
 		documentValid(documentHash)
@@ -316,6 +386,30 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		uint amount = 1 ether;
 
 		ethNOSPaymaster.withdrawRelayHubDeposit(amount, payable(_msgSender()));
+	}
+
+	/**
+	 * Checks balance of ether previously funded for ether-less signing (using fundSigning).
+	 *
+	 * Only allowed to be called by document submitter.
+	 *
+	 * @param documentHash Keccak256 hash of the document (computed off-chain). (Only previously submitted documents are allowed.)
+	 *
+     * @return signingBalance Balance of ether previously funded for ether-less signing.
+	 */
+	function getDocumentSigningBalance(
+		bytes32 documentHash)
+		external
+		view
+		documentValid(documentHash)
+		returns (uint signingBalance)
+	{
+		// TODO: input check (document hash, sender)
+		// TODO: implement
+		// TODO: emit events
+		// TODO: unit tests
+
+		return 0;
 	}
 
 	/**
@@ -337,7 +431,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		public
 		documentValid(documentHash)
 	{
-		// TODO: implement - finish
 		// TODO: emit events
 		// TODO: unit tests
 
@@ -346,16 +439,42 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		if (document.signaturesForSignatories[_msgSender()].signTime != 0)
 			revert(); // already signed by sender
 
-		SigningInfo memory signingInfo = SigningInfo(
+		SigningInfo memory newSignature = SigningInfo(
 		{
 			signatory: _msgSender(),
 			signTime: block.timestamp
 		});
 
-		document.signaturesForSignatories[_msgSender()] = signingInfo;
-		document.signatures.push(signingInfo);
+		document.signaturesForSignatories[_msgSender()] = newSignature;
+		document.signatures.push(newSignature);
 
-		// TODO: re-evaluate certification (certificationState, currentCertification, pastCertifications)
+		if (document.certificationState == CertificationState.CertificationPending)
+		{
+			bool shouldBeCertified = true;
+
+			for (uint i = 0; i < document.currentCertification.signatures.length; i++)
+			{
+				SigningInfo storage requiredSignature = document.currentCertification.signatures[i];
+
+				if (requiredSignature.signTime == 0)
+				{
+					if (requiredSignature.signatory == newSignature.signatory)
+					{
+						requiredSignature.signTime = newSignature.signTime;
+					}
+					else
+					{
+						shouldBeCertified = false;
+					}
+				}
+			}
+
+			if (shouldBeCertified)
+			{
+				document.certificationState = CertificationState.Certified;
+				document.currentCertification.certificationTime = block.timestamp;
+			}
+		}
 	}
 
 	/**
@@ -441,7 +560,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	 * @return submitter Submitter of the certification. Zero if certificationState = NotSubmitted.
 	 * @return currentCertification Current pending or completed certification information.
 	 * @return pastCertifications Historical completed certifications (if submission was amended).
-	 * @return orphanedSignatures Signatures not required by certification.
+	 * @return signatures Signatures (including signatures not required by certification).
 	 */
 	function verifyDocument(
 		bytes32 documentHash)
@@ -453,9 +572,8 @@ contract EthNOS is BaseRelayRecipient, Ownable
 			address submitter,
 			CertificationInfo memory currentCertification,
 			CertificationInfo[] memory pastCertifications,
-			SigningInfo[] memory orphanedSignatures)
+			SigningInfo[] memory signatures)
 	{
-		// TODO: implement - finish
 		// TODO: unit tests
 
 		DocumentInfo storage document = documents[documentHash];
@@ -465,7 +583,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 			document.submitter,
 			document.currentCertification,
 			document.pastCertifications,
-			document.signatures); // TODO:
+			document.signatures);
 	}
 
 	// @dev This is to fix multiple inheritance conflict.
