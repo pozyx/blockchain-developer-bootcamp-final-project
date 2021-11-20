@@ -3,7 +3,6 @@
 pragma solidity 0.8.9;
 
 import "@opengsn/contracts/src/BasePaymaster.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./EthNOS.sol";
 
 /**
@@ -13,8 +12,6 @@ import "./EthNOS.sol";
  */
 contract EthNOSPaymaster is BasePaymaster
 {
-	using SafeMath for uint256;
-
 	/// EthNOS contract paymaster will pay for.
 	EthNOS private ethNOS;
 
@@ -24,11 +21,9 @@ contract EthNOSPaymaster is BasePaymaster
 	/// @inheritdoc IPaymaster
 	string public override versionPaymaster = "2.2.4";
 
-	// TODO: other params?
 	/// Event emited before transaction is relayed.
 	event PreRelayed(bytes32 documentHash);
 
-	// TODO: other params?
 	/// Event emited after transaction is relayed.
 	event PostRelayed(bytes32 documentHash);
 
@@ -54,58 +49,70 @@ contract EthNOSPaymaster is BasePaymaster
 
 	// TODO: override getGasAndDataLimits? probably not
 
-	/// @inheritdoc IPaymaster
+	/**
+	 * Only calls to EthNOS contract of function signDocument are allowed to be relayed.
+	 * EthNOS contract is queried for funding approval
+     *
+	 * @inheritdoc IPaymaster
+	 */
 	function preRelayedCall(
 		GsnTypes.RelayRequest calldata relayRequest,
 		bytes calldata signature,
 		bytes calldata approvalData,
-		uint256 maxPossibleGas) // TODO: understand
+		uint maxPossibleGas)
 		external
 		override
 		virtual
 		relayHubOnly
 		returns (bytes memory context, bool)
 	{
+		(signature, approvalData);
+
 		_verifyForwarder(relayRequest);
 		require(relayRequest.request.to == address(ethNOS));
+		require(bytes4(relayRequest.request.data[:4]) == EthNOS.signDocument.selector, "Only signDocument call is allowed");
 
-		// TODO: only allow signDocumentPendingCertification call
+		bytes32 documentHash = abi.decode(relayRequest.request.data[4:], (bytes32));
 
-		(signature, approvalData, maxPossibleGas);
+		uint maxAmountToBeCharged = relayHub.calculateCharge(
+			maxPossibleGas,
+			relayRequest.relayData);
 
-		// TODO: parse documentHash
-		bytes32 documentHash = 0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53;
+		// reverts if not funded
+		ethNOS.approveRelayedSignDocumentCall(
+			documentHash,
+			maxAmountToBeCharged,
+			relayRequest.request.from);
 
 		emit PreRelayed(documentHash);
 
-		return
-			(abi.encode(documentHash),
-			// Funding conditions will be evaluated by target contract.
-			// If call cannot be paid for, it will be reverted.
-			true);
+		return (abi.encode(documentHash), false);
 	}
 
-	/// @inheritdoc IPaymaster
+	/**
+	 * EthNOS contract is called to do accounting after charge.
+     *
+	 * @inheritdoc IPaymaster
+	 */
 	function postRelayedCall(
 		bytes calldata context,
 		bool success,
-		uint256 gasUseWithoutPost,
+		uint gasUseWithoutPost,
 		GsnTypes.RelayData calldata relayData)
 		external
 		override
 		virtual
 		relayHubOnly
 	{
-		// TODO: really don't use success?
 		(success);
 
 		bytes32 documentHash = abi.decode(context, (bytes32));
 
-		uint256 amountCharged = relayHub.calculateCharge(
-			gasUseWithoutPost.add(gasUsedByPost),
+		uint amountCharged = relayHub.calculateCharge(
+			gasUseWithoutPost + gasUsedByPost,
 			relayData);
 
-		ethNOS.chargeSignDocumentIfFundedCall(documentHash, amountCharged);
+		ethNOS.chargeRelayedSignDocumentCall(documentHash, amountCharged);
 
 		emit PostRelayed(documentHash);
 	}
@@ -113,7 +120,7 @@ contract EthNOSPaymaster is BasePaymaster
 	/**
 	 * Withdraws ether from relay hub deposit.
 	 *
-	 * (Only allowed to be called by EthNOS contract.)
+	 * Only allowed to be called by EthNOS contract.
 	 *
 	 * @param amount Required amount to withdraw.
 	 * @param dest Address to withdraw to.

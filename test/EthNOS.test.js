@@ -39,13 +39,13 @@ contract("EthNOS", async accounts =>
                 assert.equal(await ethNOS.trustedForwarder(), '0x0000000000000000000000000000000000000000', "forwarder is set unexpectedly");
             });
 
-            it("signDocumentIfFunded direct", async () =>
+            it("signDocument direct", async () =>
             {
-                assert.equal(await ethNOS.signDocumentIfFundedCalled(), false, "signDocumentIfFundedCalled set before");
+                assert.equal(await ethNOS.signDocumentCalled(), false, "signDocumentCalled set before");
 
-                await ethNOS.signDocumentIfFunded('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
+                await ethNOS.signDocument('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
 
-                assert.equal(await ethNOS.signDocumentIfFundedCalled(), true, "signDocumentIfFundedCalled not set");
+                assert.equal(await ethNOS.signDocumentCalled(), true, "signDocumentCalled not set");
             });
         });
     }
@@ -56,9 +56,9 @@ contract("EthNOS", async accounts =>
         // TODO: temporary
         describe("TMP - with GSN", () =>
         {
-            const callSignDocumentIfFundedThroughGsn = async (contract, provider) =>
+            const callSignDocumentThroughGsn = async (contract, provider) =>
             {
-                const transaction = await contract.signDocumentIfFunded('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
+                const transaction = await contract.signDocument('0xcec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
                 const receipt = await provider.waitForTransaction(transaction.hash);
                 // TODO: parse logs?
                 // const result = receipt.logs.
@@ -74,28 +74,34 @@ contract("EthNOS", async accounts =>
 
             it("fundSigning", async () =>
             {
+                await ethNOS.submitDocument('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', [accounts[1]]);
                 const originalFunds = new BN(await web3.eth.getBalance(await ethNOSPaymaster.getHubAddr()));
                 await ethNOS.fundSigning('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', {value: 5})
                 const newFunds = new BN(await web3.eth.getBalance(await ethNOSPaymaster.getHubAddr()));
                 assert.equal(newFunds.sub(originalFunds).toNumber(), 5, "not funded");
+                const newFundsDirect = await ethNOS.getDocumentSigningBalance('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
+                assert.equal(newFundsDirect, 5, "not funded (direct)");
             });
 
             it("withdrawFunds", async () =>
             {
-                await ethNOS.fundSigning('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', {value: web3.utils.toWei('2')})
+                await ethNOS.submitDocument('0xaec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', [accounts[1]]);
+                await ethNOS.fundSigning('0xaec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', {value: web3.utils.toWei('2')})
                 const originalFunds = new BN(await web3.eth.getBalance(await ethNOSPaymaster.getHubAddr()));
                 const meOriginalFunds = new BN(await web3.eth.getBalance(accounts[0]));
-                await ethNOS.withdrawSigningFunds('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
+                const originalFundsDirect = await ethNOS.getDocumentSigningBalance('0xaec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
+                assert.equal(originalFundsDirect, web3.utils.toWei('2'), "not funded (direct)");
+                await ethNOS.withdrawSigningBalance('0xaec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
                 const newFunds = new BN(await web3.eth.getBalance(await ethNOSPaymaster.getHubAddr()));
                 const meNewFunds = new BN(await web3.eth.getBalance(accounts[0]));
-                assert.isTrue(originalFunds.sub(newFunds).eq(new BN(web3.utils.toWei('1'))), "not withdrawn from there");
-                assert.equal(meNewFunds.sub(meOriginalFunds).cmp(new BN(web3.utils.toWei('0.9'))), 1, "not withdrawn to me");
+                const newFundsDirect = await ethNOS.getDocumentSigningBalance('0xaec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
+                assert.isTrue(originalFunds.sub(newFunds).eq(new BN(web3.utils.toWei('2'))), "not withdrawn from there");
+                assert.equal(meNewFunds.sub(meOriginalFunds).cmp(new BN(web3.utils.toWei('1.9'))), 1, "not withdrawn to me");
+                assert.equal(newFundsDirect, 0, "not widthdrawn (direct)");
             });
 
-            it("signDocumentIfFunded", async () =>
+            it("signDocument", async () =>
             {
-                console.log("BEFORE: " + await ethNOS.chargeSignDocumentIfFundedCallCalledDocumentHash() + " " + await ethNOS.chargeSignDocumentIfFundedCallAmountCharged());
-
                 const provider = new ethers.providers.Web3Provider(
                     await RelayProvider.newProvider(
                     {
@@ -106,6 +112,13 @@ contract("EthNOS", async accounts =>
 
                 const account = provider.provider.newAccount();
 
+                await ethNOS.submitDocument('0xcec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', [account.address], {value: web3.utils.toWei('2')});
+
+                console.log("BEFORE: signDocument " + await ethNOS.signDocumentCalled());
+                console.log("BEFORE: approveRelayedSignDocumentCall " + await ethNOS.approveRelayedSignDocumentCallCalledDocumentHash() + " " + await ethNOS.approveRelayedSignDocumentCallMaxAmountCharged() + " " + await ethNOS.approveRelayedSignDocumentCallOriginalSender());
+                console.log("BEFORE: chargeRelayedSignDocumentCall " + await ethNOS.chargeRelayedSignDocumentCallCalledDocumentHash() + " " + await ethNOS.chargeRelayedSignDocumentCallAmountCharged());
+                console.log("BEFORE: balance " + await ethNOS.getDocumentSigningBalance('0xcec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53'));
+
                 const contract = await new ethers.Contract(
                     ethNOS.address,
                     ethNOS.abi,
@@ -113,11 +126,14 @@ contract("EthNOS", async accounts =>
                         account.address,
                         account.privateKey));
 
-                await callSignDocumentIfFundedThroughGsn(contract, provider);
+                await callSignDocumentThroughGsn(contract, provider);
 
-                console.log("AFTER: " + await ethNOS.chargeSignDocumentIfFundedCallCalledDocumentHash() + " " + await ethNOS.chargeSignDocumentIfFundedCallAmountCharged());
+                console.log("AFTER: signDocument " + await ethNOS.signDocumentCalled());
+                console.log("AFTER: approveRelayedSignDocumentCall " + await ethNOS.approveRelayedSignDocumentCallCalledDocumentHash() + " " + await ethNOS.approveRelayedSignDocumentCallMaxAmountCharged() + " " + await ethNOS.approveRelayedSignDocumentCallOriginalSender());
+                console.log("AFTER: chargeRelayedSignDocumentCall " + await ethNOS.chargeRelayedSignDocumentCallCalledDocumentHash() + " " + await ethNOS.chargeRelayedSignDocumentCallAmountCharged());
+                console.log("AFTER: balance " + await ethNOS.getDocumentSigningBalance('0xcec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53'));
 
-                assert.equal(await ethNOS.signDocumentIfFundedCalled(), true, "signDocumentIfFundedCalled not set");
+                assert.equal(await ethNOS.signDocumentCalled(), true, "signDocumentCalled not set");
             });
         });
     }

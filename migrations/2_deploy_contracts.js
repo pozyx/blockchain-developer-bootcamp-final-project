@@ -42,7 +42,6 @@ module.exports = async function(deployer, network, accounts)
 	{
 		useGSN = false;
 	}
-	// TODO: or some with GSN?
 	else if (network == "develop" || network == "development")
 	{
 		useGSN = false;
