@@ -14,7 +14,6 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
-	// - events
 	// - design UI
 	// - implement barebone UI (core)
 	//   - also see OpenGSN/SimpleUse
@@ -46,7 +45,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	// - node_modules/@opengsn/dev/package.json: "main": "dist/index.js" changed to "main": "dist/src/index.js"
 	// - await web3.eth.getBalance(accounts[0])
 	// - await web3.eth.getBalance(await ethNOSPaymaster.getHubAddr())
-	// - await ethNOS.fundSigning('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', {value: 5})
+	// - await ethNOS.fundDocumentSigning('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', {value: 5})
 	// - Run Ganache: net=`date "+%j%H%M%S"` && ganache-cli --networkId $net --chainId $net -v
 	// - Run GSN: gsn start
 	// - Run Truffle: truffle console
@@ -135,6 +134,43 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	/// Signing and certification information for all documents (key is keccak256 hash of the document).
 	mapping (bytes32 => DocumentInfo) private documents;
 
+	/// Event emited when document is submitted for certification.
+	/// @param documentHash Keccak256 hash of the document.
+	event DocumentSubmitted(bytes32 documentHash);
+
+	/// Event emited when certification submission of previously submitted document is amended.
+	/// @param documentHash Keccak256 hash of the document.
+	event DocumentSubmissionAmended(bytes32 documentHash);
+
+	/// Event emited when certification submission of previously submitted document is delete.
+	/// @param documentHash Keccak256 hash of the document.
+	event DocumentSubmissionDeleted(bytes32 documentHash);
+
+	/// Event emited when paymaster (relay hub) is funded with ether to allow ether-less signing by required signatories using GSN.
+	/// @param documentHash Keccak256 hash of the document.
+	/// @param amount Amount funded for signing the specified document.
+	event DocumentSigningFunded(bytes32 documentHash, uint amount);
+
+	/// Event emited when ether previously funded for ether-less signing is withdrawn from paymaster (relay hub).
+	/// @param documentHash Keccak256 hash of the document.
+	/// @param amount Amount withdrawn from signing the specified document.
+	event DocumentSigningBalanceWithdrawn(bytes32 documentHash, uint amount);
+
+	/// Event emited when document is signed.
+	/// @param documentHash Keccak256 hash of the document.
+	/// @param signatory Address of the signatory.
+	event DocumentSigned(bytes32 documentHash, address signatory);
+
+	/// Event emited when ether-less signing was performed and spent amount is charged
+	/// (substracted from balance for signing the specified document).
+	/// @param documentHash Keccak256 hash of the document.
+	/// @param amount Amount charged for signing the specified document.
+	event DocumentSigningCharged(bytes32 documentHash, uint amount);
+
+	/// Event emited when document is certified (all requited signatories signed the document).
+	/// @param documentHash Keccak256 hash of the document.
+	event DocumentCertified(bytes32 documentHash);
+
 	/**
 	 * Check document hash is not empty.
 	 *
@@ -206,7 +242,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	 * if no signatories are required or if the document was already signed by all required
 	 * signatories (see signDocument).
 	 *
-	 * Can receive ether - if not zero, then paymaster will be funded to allow ether-less signing (see fundSigning) -
+	 * Can receive ether - if not zero, then paymaster will be funded to allow ether-less signing (see fundDocumentSigning) -
 	 * only allowed when document is not immediately certified.
 	 *
 	 * @param documentHash Keccak256 hash of the document (computed off-chain). Previously submitted documents are not allowed.
@@ -219,7 +255,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		payable
 		documentValid(documentHash)
 	{
-		// TODO: emit events?
 		// TODO: unit tests
 
 		DocumentInfo storage document = documents[documentHash];
@@ -228,6 +263,8 @@ contract EthNOS is BaseRelayRecipient, Ownable
 
 		document.submitter = _msgSender();
 
+		emit DocumentSubmitted(documentHash);
+
 		submitDocumentInternal(
 			document,
 			documentHash,
@@ -235,7 +272,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	}
 
 	/**
-	 * Amends submission of previously submitted document -
+	 * Amends certification submission of previously submitted document -
 	 * allows to amend required signatories (correcting mistake, etc.).
 	 *
 	 * Only allowed to be called by document submitter.
@@ -249,7 +286,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	 * if no signatories are required or if the document was already signed by all required
 	 * signatories (see signDocument).
 	 *
-	 * Can receive ether - if not zero, then paymaster will be funded to allow ether-less signing (see fundSigning) -
+	 * Can receive ether - if not zero, then paymaster will be funded to allow ether-less signing (see fundDocumentSigning) -
 	 * only allowed when document is not immediately certified.
 	 *
 	 * @param documentHash Keccak256 hash of the document (computed off-chain). Only previously submitted documents are allowed.
@@ -263,15 +300,14 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		documentValid(documentHash)
 		onlySubmitter(documentHash)
 	{
-		// TODO: emit events?
-		// TODO: unit tests
-
 		DocumentInfo storage document = documents[documentHash];
 
 		if (document.certificationState == CertificationState.Certified)
 			document.pastCertifications.push(document.currentCertification);
 
 		delete document.currentCertification;
+
+		emit DocumentSubmissionAmended(documentHash);
 
 		submitDocumentInternal(
 			document,
@@ -286,20 +322,18 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		address[] calldata requiredSignatories)
 		private
 	{
-		// TODO: emit events?
-
 		document.currentCertification.submissionTime = block.timestamp;
 		document.currentCertification.requiredSignatories = requiredSignatories;
 
 		document.certificationState = CertificationState.CertificationPending;
-		updateCertification(document);
+		updateDocumentCertification(documentHash, document);
 
 		if (msg.value > 0)
-			fundSigning(documentHash);
+			fundDocumentSigning(documentHash);
 	}
 
 	/**
-	 * Deletes submission of previously submitted document (correcting mistake, etc.).
+	 * Deletes certification submission of previously submitted document (correcting mistake, etc.).
 	 *
 	 * Only allowed to be called by document submitter.
 	 * Document must be pending to be certified (note that also previously certified
@@ -319,7 +353,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		onlySubmitter(documentHash)
 		onlyPendingCertification(documentHash)
 	{
-		// TODO: emit events
 		// TODO: unit tests
 
 		DocumentInfo storage document = documents[documentHash];
@@ -335,18 +368,20 @@ contract EthNOS is BaseRelayRecipient, Ownable
 			document.pastCertifications.pop();
 			document.certificationState = CertificationState.Certified;
 		}
+
+		emit DocumentSubmissionDeleted(documentHash);
 	}
 
 	// TODO: can required amount be calculated?
 	/**
-	 * Funds paymaster (relay hub) with ether to allow ether-less signing by required signatories using GSN.
+	 * Funds paymaster (relay hub) with ether to allow ether-less signing (using fundDocumentSigning) by required signatories using GSN.
 	 * Amount will be usable only for signing the specified document.
 	 *
 	 * Only allowed to be called by document submitter.
 	 *
 	 * @param documentHash Keccak256 hash of the document (computed off-chain). Only document pending certification is allowed.
 	 */
-	function fundSigning(
+	function fundDocumentSigning(
 		bytes32 documentHash)
 		public
 		payable
@@ -354,7 +389,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		onlySubmitter(documentHash)
 		onlyPendingCertification(documentHash)
 	{
-		// TODO: emit events
 		// TODO: unit tests
 
 		require(msg.value > 0, "No ether provided");
@@ -367,10 +401,12 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		(bool sent, bytes memory data) = payable(ethNOSPaymaster).call{value: msg.value}("");
 		(data);
         require(sent, "Failed to fund paymaster / relay hub");
+
+		emit DocumentSigningFunded(documentHash, msg.value);
 	}
 
 	/**
-	 * Withdraws ether previously funded for ether-less signing (using fundSigning) from paymaster (relay hub).
+	 * Withdraws ether previously funded for ether-less signing (using fundDocumentSigning) from paymaster (relay hub).
 	 * This is usually called after document is certified to get unspent amount back to submitter,
 	 * but it is not a requirement.
 	 *
@@ -378,13 +414,12 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	 *
 	 * @param documentHash Keccak256 hash of the document (computed off-chain). Only previously submitted documents are allowed.
 	 */
-	function withdrawSigningBalance(
+	function withdrawDocumentSigningBalance(
 		bytes32 documentHash)
 		external
 		documentValid(documentHash)
 		onlySubmitter(documentHash)
 	{
-		// TODO: emit events
 		// TODO: unit tests
 
 		DocumentInfo storage document = documents[documentHash];
@@ -392,11 +427,14 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		require(document.signingBalance > 0, "No balance to withdraw");
 
 		ethNOSPaymaster.withdrawRelayHubDeposit(document.signingBalance, payable(_msgSender()));
+
+		emit DocumentSigningBalanceWithdrawn(documentHash, document.signingBalance);
+
 		document.signingBalance = 0;
 	}
 
 	/**
-	 * Checks balance of ether previously funded for ether-less signing (using fundSigning).
+	 * Checks balance of ether previously funded for ether-less signing (using fundDocumentSigning).
 	 *
 	 * Only allowed to be called by document submitter.
 	 *
@@ -436,7 +474,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		external
 		documentValid(documentHash)
 	{
-		// TODO: emit events
 		// TODO: unit tests
 
 		DocumentInfo storage document = documents[documentHash];
@@ -452,8 +489,10 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		document.signaturesForSignatories[_msgSender()] = newSignature;
 		document.signatures.push(newSignature);
 
+		emit DocumentSigned(documentHash, _msgSender());
+
 		if (document.certificationState == CertificationState.CertificationPending)
-			updateCertification(document);
+			updateDocumentCertification(documentHash, document);
 
 		// TODO: temporary
 		signDocumentCalled = true;
@@ -471,7 +510,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	 * and will check all required conditions of funding the relayed call.
 	 *
 	 * @param documentHash Keccak256 hash of the document. Only document pending certification is allowed.
-	 * @param maxAmountToBeCharged Maximum amout which can be charged by GSN relayer. Previously funded balance (using fundSigning) cannot be lower.
+	 * @param maxAmountToBeCharged Maximum amout which can be charged by GSN relayer. Previously funded balance (using fundDocumentSigning) cannot be lower.
 	 * @param originalSender Original sender of the intended signDocument call. Must be one of the required document signatories.
 	 */
 	function approveRelayedSignDocumentCall(
@@ -484,7 +523,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		documentValid(documentHash)
 		onlyPendingCertification(documentHash)
 	{
-		// TODO: emit events?
 		// TODO: unit tests
 
 		DocumentInfo storage document = documents[documentHash];
@@ -534,13 +572,14 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		external
 		onlyPaymaster
 	{
-		// TODO: emit events
 		// TODO: unit tests
 
 		// - no need to validate the document - it was previously checked in approveRelayedSignDocumentCall
 		// (there is no way to call this function without making approveRelayedSignDocumentCall call first)
 		// - no need to validate amountCharged - it was previously checked in approveRelayedSignDocumentCall
 		documents[documentHash].signingBalance -= amountCharged;
+
+		emit DocumentSigningCharged(documentHash, amountCharged);
 
 		// TODO: temporary
 		chargeRelayedSignDocumentCallCalledDocumentHash = documentHash;
@@ -591,9 +630,11 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	 * Updates certification state of the document.
 	 * If the document was signed by all required signatories, it is marked as certified.
 	 *
+	 * @param documentHash Keccak256 hash of the document.
 	 * @param document Document data.
 	 */
-	function updateCertification(
+	function updateDocumentCertification(
+		bytes32 documentHash,
 		DocumentInfo storage document)
 		private
 	{
@@ -615,6 +656,8 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		{
 			document.certificationState = CertificationState.Certified;
 			document.currentCertification.certificationTime = block.timestamp;
+
+			emit DocumentCertified(documentHash);
 		}
 	}
 

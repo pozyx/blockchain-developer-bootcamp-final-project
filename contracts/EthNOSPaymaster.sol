@@ -21,10 +21,12 @@ contract EthNOSPaymaster is BasePaymaster
 	/// @inheritdoc IPaymaster
 	string public override versionPaymaster = "2.2.4";
 
-	/// Event emited before transaction is relayed.
+	/// Event emited before signDocument call is relayed.
+	/// @param documentHash Keccak256 hash of the document.
 	event PreRelayed(bytes32 documentHash);
 
-	/// Event emited after transaction is relayed.
+	/// Event emited after signDocument call is relayed.
+	/// @param documentHash Keccak256 hash of the document.
 	event PostRelayed(bytes32 documentHash);
 
 	/**
@@ -51,7 +53,7 @@ contract EthNOSPaymaster is BasePaymaster
 
 	/**
 	 * Only calls to EthNOS contract of function signDocument are allowed to be relayed.
-	 * EthNOS contract is queried for funding approval
+	 * EthNOS contract is queried for funding approval.
      *
 	 * @inheritdoc IPaymaster
 	 */
