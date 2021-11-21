@@ -46,6 +46,8 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	//   - EthNOS.test.js
 	//   - TODOs in launch.sh
 	//   - (console_with_gsn)
+	//   - remove web/README.md
+	//   - remove/change favico
 
 	// TODO: notes
 	// - do not call onlyowner methods from forwarder (do not set forwarder to accounts[0])
