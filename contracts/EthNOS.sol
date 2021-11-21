@@ -14,35 +14,43 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
-	// - design UI
-	// - implement barebone UI (core)
-	//   - also see OpenGSN/SimpleUse
-	//   - also see OpenGSN React app
-	// - implement barebone UI (GSN)
-	// - unit tests, remove temporary variables
-	// - review remaining TODOs
-	// - amend and document design pattern decisions
-	// - amend and document attack vectors protections
-	// - beautify UI
-	// - calculate post gas usage
-	// - verify and publish source code on etherscan
-	// - hosting
-	// - instructions: installing, running, tests, document state chart?
-	// - screencast
-	// - cleanup:
+	// - UI: web skeleton
+	// - UI: home page (upload document) + document page
+	// - UI: show simple status (+ update on change)
+	// - UI: connect (disconnect)
+	// - UI: simple submit, sign
+	// - UI: fund/withdraw, etherless sign (see OpenGSN/SimpleUse, OpenGSN React app)
+	// - core functionality unit tests, remove temporary variables
+	// - UI: make look ok, proper description
+	// - (UI: fund on submit, amend/delete, show history, show orphaned signatories)
+	// - (gsn functionality unit tests)
+	// - (calculate post gas usage)
+	// - inherit library or interface??? ask
+	// - yarn everywnere instead of npm / npx?
+	// - try clean run
+	// - deploy
+	//   - smart contracts
+	//   - web (hosting)
+	//   - (verify and publish source code on etherscan)
+	// - prepare for submission
+	//   - amend and document design pattern decisions
+	//   - amend and document attack vectors protections
+	//   - prepare document (use example project as template)
+	//   - (certification state chart)
+	//   - screencast
+	// - cleanup
+	//   - source code indentation
+	//   - review remaining TODOs
 	//   - .vscode to gitignore?
 	//   - truffle-config.js
 	//   - EthNOS.test.js
 	//   - TODOs in launch.sh
-	//   - console_with_gsn
-	//     - "console_with_gsn": "./scripts/launch.sh npx truffle migrate --network test_with_gsn && npx truffle console --network test_with_gsn"
-	//     - "console_with_gsn": "./scripts/launch.sh npx truffle console --network test_with_gsn"
-	//     - "console_with_gsn": "./scripts/launch.sh ls && ls" - sometimes just one
+	//   - (console_with_gsn)
 
 	// TODO: notes
 	// - do not call onlyowner methods from forwarder (do not set forwarder to accounts[0])
 	// - use yarn (opengsn was not buildable in npm)
-	// - node_modules/@opengsn/dev/package.json: "main": "dist/index.js" changed to "main": "dist/src/index.js"
+	// - node_modules/@opengsn/dev/package.json: "main": "dist/index.js" changed to "main": "dist/src/index.js" - maybe not needed
 	// - await web3.eth.getBalance(accounts[0])
 	// - await web3.eth.getBalance(await ethNOSPaymaster.getHubAddr())
 	// - await ethNOS.fundDocumentSigning('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', {value: 5})
@@ -542,7 +550,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 
 		require(isSenderRequiredSignatory, "Sender is not required signatory");
 
-		// TODO: temporary- and make function view?
+		// TODO: temporary- and make function view
 		approveRelayedSignDocumentCallCalledDocumentHash = documentHash;
 		approveRelayedSignDocumentCallMaxAmountCharged = maxAmountToBeCharged;
 		approveRelayedSignDocumentCallOriginalSender = originalSender;
