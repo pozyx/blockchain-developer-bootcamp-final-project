@@ -1,6 +1,11 @@
-<div>
-  this is test
-  <mat-slider min="1" max="100" step="1" value="50"></mat-slider>
+<div class="app-frame mat-app-background">
+    <app-top-bar
+        (isEthereumConnectionReadyChanged)="onIsEthereumConnectionReadyChanged($event)">
+    </app-top-bar>
+    <router-outlet
+        *ngIf="isEthereumConnectionReady">
+    </router-outlet>
+    <app-not-connected
+        *ngIf="!isEthereumConnectionReady">
+    </app-not-connected>
 </div>
-
-<router-outlet></router-outlet>

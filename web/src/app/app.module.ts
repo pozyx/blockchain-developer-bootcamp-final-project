@@ -5,17 +5,37 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { MatSliderModule } from '@angular/material/slider';
+import { NgxFileDropModule } from 'ngx-file-drop';
+
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+
+import { TopBarComponent } from './top-bar/top-bar.component';
+import { DocumentInputComponent } from './document-input/document-input.component';
+import { DocumentDetailComponent } from './document-detail/document-detail.component';
+import { NotConnectedComponent } from './not-connected/not-connected.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    TopBarComponent,
+    DocumentInputComponent,
+    DocumentDetailComponent,
+    NotConnectedComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    MatSliderModule // TODO: remove
+    NgxFileDropModule,
+    MatToolbarModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatButtonModule
   ],
   providers: [],
   bootstrap: [AppComponent]

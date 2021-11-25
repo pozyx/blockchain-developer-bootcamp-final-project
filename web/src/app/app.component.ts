@@ -5,6 +5,14 @@ import { Component } from '@angular/core';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
+
 export class AppComponent {
   title = 'ethNOS';
+
+  public isEthereumConnectionReady : boolean = false;
+
+  onIsEthereumConnectionReadyChanged(isEthereumConnectionReady: boolean) {
+    this.isEthereumConnectionReady = isEthereumConnectionReady;
+    console.log("reeeeady?", isEthereumConnectionReady);
+  }
 }

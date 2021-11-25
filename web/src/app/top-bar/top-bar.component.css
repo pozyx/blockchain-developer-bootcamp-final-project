@@ -1,0 +1,43 @@
+.mat-toolbar-row1
+{
+    height: 60px !important;
+}
+
+.mat-toolbar-row2
+{
+    height: 20px !important;
+}
+
+a
+{
+    color: inherit;
+}
+
+a.header
+{
+    text-decoration: none;
+}
+
+.spacer {
+    flex: 1 1 auto;
+}
+
+button {
+    margin-bottom: 7px;
+    padding-top: 2px;
+}
+
+img.connect
+{
+    padding-bottom: 3px;
+    height: 25px;
+    margin-right: 5px;
+}
+
+mat-icon.logged-in {
+    vertical-align: top;
+}
+
+span.logged-in {
+    display: inline-block;
+}

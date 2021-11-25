@@ -14,17 +14,15 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
-	// - UI: web skeleton
-	// - UI: home page (upload document) + document page
-	// - UI: show simple status (+ update on change)
-	// - UI: connect (disconnect)
+	// - UI: show simple status (+ update on change) + close document view (goto start)
 	// - UI: simple submit, sign
 	// - UI: fund/withdraw, etherless sign (see OpenGSN/SimpleUse, OpenGSN React app)
 	// - core functionality unit tests, remove temporary variables
-	// - UI: make look ok, proper description
+	// - (UI: make look ok, proper description)
 	// - (UI: fund on submit, amend/delete, show history, show orphaned signatories)
 	// - (gsn functionality unit tests)
 	// - (calculate post gas usage)
+	// - (resolve addresses as ENS)
 	// - inherit library or interface??? ask
 	// - yarn everywnere instead of npm / npx?
 	// - try clean run
@@ -39,7 +37,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	//   - (certification state chart)
 	//   - screencast
 	// - cleanup
-	//   - source code indentation
+	//   - source code indentation + braces
 	//   - review remaining TODOs
 	//   - .vscode to gitignore?
 	//   - truffle-config.js
