@@ -12,6 +12,7 @@
   "scripts": {
     "test": "./scripts/launch.sh npx truffle test --network test",
     "test_with_gsn": "./scripts/launch.sh npx truffle test --network test_with_gsn",
+    "console": "./scripts/launch.sh npx truffle console --network test",
     "console_with_gsn": "./scripts/launch.sh npx truffle console --network test_with_gsn"
   }
 }

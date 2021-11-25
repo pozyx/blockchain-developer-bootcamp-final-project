@@ -29,7 +29,7 @@
         <span
             *ngIf="isEthereumProviderPresent && !isEthereumProviderConnected && !isEthereumProviderActionNeeded"
             class="mat-subheading-1">
-            Connect your Ethereum wallet to Rinkeby testnet
+            Connect your Ethereum wallet to Rinkeby (or local) testnet
         </span>
         <span
             *ngIf="isEthereumProviderActionNeeded"
@@ -39,7 +39,7 @@
         <span
             *ngIf="isEthereumProviderConnected && !isEthereumProviderConnectedToCompatibleNetwork"
             class="mat-subheading-1">
-            Switch your Ethereum wallet to Rinkeby testnet
+            Switch your Ethereum wallet to Rinkeby (or local) testnet
         </span>
         <span *ngIf="isEthereumProviderConnected && isEthereumProviderConnectedToCompatibleNetwork"
             class="mat-subheading-1">

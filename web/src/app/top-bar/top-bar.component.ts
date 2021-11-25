@@ -1,7 +1,9 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { ethers } from 'ethers';
 import detectEthereumProvider  from '@metamask/detect-provider';
+import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
 
+// TODO: extract?
 interface ProviderRpcError extends Error {
   code: number;
   data?: unknown;
@@ -12,6 +14,7 @@ interface ProviderRpcError extends Error {
   templateUrl: './top-bar.component.html',
   styleUrls: ['./top-bar.component.css']
 })
+
 export class TopBarComponent implements OnInit {
 
   private web3Provider : ethers.providers.Web3Provider | null = null;
@@ -25,19 +28,22 @@ export class TopBarComponent implements OnInit {
   public isEthereumProviderActionNeeded : boolean = false;
   public selectedAddress : string | null = null;
 
-  @Output() isEthereumConnectionReadyChanged =
-    new EventEmitter<boolean>();
-
   public get isEthereumProviderConnectedToCompatibleNetwork(){
     return this._isEthereumProviderConnectedToCompatibleNetwork;
   }
 
   public set isEthereumProviderConnectedToCompatibleNetwork(val: boolean) {
+
     this._isEthereumProviderConnectedToCompatibleNetwork = val;
-    this.isEthereumConnectionReadyChanged.emit(val);
+
+    this.ethereumConnectionContextService.update(
+      val,
+      val ? this.web3Provider : null,
+      val ? this.web3Signer : null);
   }
 
-  constructor() { }
+  constructor(private ethereumConnectionContextService : EthereumConnectionContextService)
+  { }
 
   async ngOnInit() {
     const ethereumProvider = await detectEthereumProvider() as any;
@@ -107,8 +113,9 @@ export class TopBarComponent implements OnInit {
       this.isEthereumProviderActionNeeded = false;
 
       const network = await this.web3Provider!.getNetwork();
-      // TODO: Rinkeby only
-      this.isEthereumProviderConnectedToCompatibleNetwork = network.chainId == 4;
+      this.isEthereumProviderConnectedToCompatibleNetwork =
+        network.chainId == 4 ||  // Rinkeby
+        network.chainId > 1000;  // local
     }
     catch (err)
     {
