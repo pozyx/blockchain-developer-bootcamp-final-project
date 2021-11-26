@@ -14,20 +14,25 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
-	// - UI: show simple status (+ update on change) + close document view (goto start)
+	// - UI: document detail
+	//   - test console output with submitted
+	//   - display
+	//   - show events
+	//   - more prominent go back to document-input
+	//   - TODOs in document-detail
 	// - UI: simple submit, sign
 	// - UI: fund/withdraw, etherless sign (see OpenGSN/SimpleUse, OpenGSN React app)
-	// - core functionality unit tests, remove temporary variables
-	// - (UI: make look ok, proper description)
-	// - (UI: fund on submit, amend/delete, show history, show orphaned signatories)
-	// - (gsn functionality unit tests)
+	// - contract unit tests (+ remove temporary variables in contract)
+	// - (UI: proper captions / descriptions)
 	// - (calculate post gas usage)
-	// - (resolve addresses as ENS)
-	// - inherit library or interface??? ask
-	// - yarn everywnere instead of npm / npx?
-	// - try clean run
+	// - (UI: resolve ENS addresses)
+	// - (UI: fund on submit, amend/delete, show history, show orphaned signatories)
+	// - inherit library or interface? ask?
+	// - (console, console_with_gsn - try include migrate)
+	// - (ABI copying ok? contract address hardcoding ok?)
+	// - try clean run (contracts, tests, web)
 	// - deploy
-	//   - smart contracts
+	//   - smart contracts (Rinkeby)
 	//   - web (hosting)
 	//   - (verify and publish source code on etherscan)
 	// - prepare for submission
@@ -37,15 +42,11 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	//   - (certification state chart)
 	//   - screencast
 	// - cleanup
-	//   - source code indentation + braces
-	//   - review remaining TODOs
-	//   - .vscode to gitignore?
+	//   - TODOs (all files incl. web)
 	//   - truffle-config.js
 	//   - EthNOS.test.js
-	//   - TODOs in launch.sh
-	//   - (console_with_gsn)
-	//   - remove web/README.md
-	//   - remove/change favico
+	//   - source code indentation + braces - make consistent everywhere
+	//   - .vscode to gitignore?
 
 	// TODO: notes
 	// - do not call onlyowner methods from forwarder (do not set forwarder to accounts[0])

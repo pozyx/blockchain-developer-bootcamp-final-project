@@ -5,11 +5,5 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './not-connected.component.html',
   styleUrls: ['./not-connected.component.css']
 })
-export class NotConnectedComponent implements OnInit {
-
-  constructor() { }
-
-  ngOnInit(): void {
-  }
-
+export class NotConnectedComponent {
 }

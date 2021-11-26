@@ -1,10 +1,8 @@
 <div class="app-frame mat-app-background">
     <app-top-bar>
     </app-top-bar>
-    <router-outlet
-        *ngIf="isEthereumConnectionReady">
+    <router-outlet *ngIf="isEthereumConnectionReady">
     </router-outlet>
-    <app-not-connected
-        *ngIf="!isEthereumConnectionReady">
+    <app-not-connected *ngIf="!isEthereumConnectionReady">
     </app-not-connected>
 </div>

@@ -1,20 +1,16 @@
-.mat-toolbar-row1
-{
+.mat-toolbar-row1 {
     height: 60px !important;
 }
 
-.mat-toolbar-row2
-{
+.mat-toolbar-row2 {
     height: 20px !important;
 }
 
-a
-{
+a {
     color: inherit;
 }
 
-a.header
-{
+a.header {
     text-decoration: none;
 }
 
@@ -27,8 +23,7 @@ button {
     padding-top: 2px;
 }
 
-img.connect
-{
+img.connect {
     padding-bottom: 3px;
     height: 25px;
     margin-right: 5px;

@@ -4,7 +4,10 @@ html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 /* woraround - ngx-file-drop allows only global styles */
-.document-input_drop-area
-{
-    position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px;
+.document-input_drop-area {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
 }

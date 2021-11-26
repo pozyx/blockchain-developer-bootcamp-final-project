@@ -8,28 +8,23 @@ import { ethers } from 'ethers'
   templateUrl: './document-input.component.html',
   styleUrls: ['./document-input.component.css']
 })
-export class DocumentInputComponent implements OnInit {
+export class DocumentInputComponent {
 
   constructor(
     private router: Router,
     private ngZone: NgZone) { }
 
-  ngOnInit(): void {
-  }
-
   handleSelectFile(event: Event) {
     let fileList = (event.currentTarget as HTMLInputElement).files;
-    if (fileList && fileList.length == 1)
-    {
+    if (fileList && fileList.length == 1) {
       let file = fileList.item(0);
       if (file)
         this.selectFile(file);
     }
   }
 
-  public handleDropFile(fileList: NgxFileDropEntry[]) {
-    if (fileList.length == 1)
-    {
+  handleDropFile(fileList: NgxFileDropEntry[]) {
+    if (fileList.length == 1) {
       let droppedFile = fileList[0];
       if (droppedFile.fileEntry.isFile) {
         (droppedFile.fileEntry as FileSystemFileEntry)
@@ -40,16 +35,15 @@ export class DocumentInputComponent implements OnInit {
     }
   }
 
-  selectFile(file: File) {
+  private selectFile(file: File) {
     var reader = new FileReader();
     var router = this.router;
-    reader.onload = function() {
+    reader.onload = function () {
       var arrayBuffer = <ArrayBuffer>this.result;
-      if (arrayBuffer)
-      {
+      if (arrayBuffer) {
         var byteArray = new Uint8Array(arrayBuffer);
-        var fileHash = ethers.utils.keccak256(byteArray);
-        router.navigateByUrl('/document/' + fileHash);
+        var documentHash = ethers.utils.keccak256(byteArray);
+        router.navigateByUrl('/document/' + documentHash);
       }
     }
     reader.readAsArrayBuffer(file);

@@ -1,6 +1,9 @@
-.root
-{
-    position: absolute; top: 95px; bottom: 15px; left: 15px; right: 15px;
+.root {
+    position: absolute;
+    top: 95px;
+    bottom: 15px;
+    left: 15px;
+    right: 15px;
 }
 
 .caption

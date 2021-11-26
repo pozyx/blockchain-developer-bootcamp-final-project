@@ -1,10 +1,6 @@
 <div class="root">
-    <ngx-file-drop
-        [directory]="false"
-        [multiple]="false"
-        (onFileDrop)="handleDropFile($event)"
-        dropZoneClassName="document-input_drop-area"
-        contentClassName="document-input_sub-drop-area">
+    <ngx-file-drop [directory]="false" [multiple]="false" (onFileDrop)="handleDropFile($event)"
+        dropZoneClassName="document-input_drop-area" contentClassName="document-input_sub-drop-area">
         <ng-template ngx-file-drop-content-tmp>
             <div>
                 Choose document for certification, signing or validation.
@@ -14,12 +10,8 @@
                     <mat-label>Browse or drop document here...</mat-label>
                     <input matInput disabled>
                 </mat-form-field>
-                <input #fileInput type="file" hidden
-                    (change)="handleSelectFile($event)">
-                <button
-                    mat-flat-button
-                    color="primary"
-                    (click)="fileInput.click()">
+                <input #fileInput type="file" hidden (change)="handleSelectFile($event)">
+                <button mat-flat-button color="primary" (click)="fileInput.click()">
                     <mat-icon class="material-icons">attach_file</mat-icon>
                     Browse...
                 </button>

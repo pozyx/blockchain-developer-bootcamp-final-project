@@ -8,19 +8,19 @@ import { EthereumConnectionContextService } from './ethereum-connection-context.
   styleUrls: ['./app.component.css'],
   providers: [EthereumConnectionContextService]
 })
-
 export class AppComponent {
 
-  title = 'ethNOS';
   private ethereumConnectionContextServiceSubscription: Subscription;
 
-  public isEthereumConnectionReady : boolean = false;
+  title = 'EthNOS';
 
-  constructor(private ethereumConnectionContextService : EthereumConnectionContextService) {
+  isEthereumConnectionReady: boolean = false;
+
+  constructor(private ethereumConnectionContextService: EthereumConnectionContextService) {
     this.ethereumConnectionContextServiceSubscription =
       ethereumConnectionContextService.isEthereumConnectionReady$.subscribe(val => {
         this.isEthereumConnectionReady = val;
-    });
+      });
   }
 
   ngOnDestroy() {
