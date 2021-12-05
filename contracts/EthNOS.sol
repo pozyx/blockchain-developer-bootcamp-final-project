@@ -265,16 +265,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		documentValid(documentHash)
 	{
 		// TODO: unit tests
-		// - revert
-		//   - (not valid)
-		//   - document already submitted
-		// - ok
-		//   - DocumentSubmitted emited
-		//   - (verifyDocument) submitter set to caller, submissionTime not zero, requiredSignatories set to input
-		//   - some signatories - (verifyDocument) CertificationPending
-		//   - no signatories - DocumentCertified emited, (verifyDocument) Certified, certificationTime equals submissionTime
-		//   - some signatories signed previously - DocumentCertified emited, (verifyDocument) Certified, certificationTime equals submissionTime
-		//   - * with ether - see tests for fundDocumentSigning
+		// - * with ether - see tests for fundDocumentSigning
 
 		DocumentInfo storage document = documents[documentHash];
 
@@ -320,14 +311,9 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		onlySubmitter(documentHash)
 	{
 		// TODO: unit tests
-		// - revert
-		//   - (not valid)
-		//   - not submitted
-		//   - not called by submitter
 		// - ok
-		//   - DocumentSubmissionAmended emited
 		//   - was certified - (verifyDocument) old certification is in pastCertifications
-		//   - same as tests for submitDocument + (verifyDocument) - submissionTime is updated, certificationTime is zero when not certified
+		//   - same as tests for submitDocument + (verifyDocument) - certificationTime is zero when not certified
 
 		DocumentInfo storage document = documents[documentHash];
 
