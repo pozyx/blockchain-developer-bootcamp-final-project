@@ -1,12 +1,16 @@
 const { RelayProvider } = require("@opengsn/provider/dist");
-const ethers = require('ethers');
+const ethers = require("ethers");
 const EthNOS = artifacts.require("EthNOS.sol");
 const EthNOSPaymaster = artifacts.require("EthNOSPaymaster.sol");
 const BN = web3.utils.BN;
+const { catchRevert } = require("./exceptionsHelpers.js");
 
 contract("EthNOS", async accounts =>
 {
     const useGSN = process.env.NETWORK == "test_with_gsn";
+
+    const emptyDocument   = "0x0000000000000000000000000000000000000000000000000000000000000000";
+    const sampleDocument1 = "0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53";
 
     let ethNOS;
     let ethNOSPaymaster;
@@ -31,6 +35,22 @@ contract("EthNOS", async accounts =>
     {
         // TODO:
 
+        // describe("submitDocument", () =>
+        // {
+        //     //--
+
+        //     it()
+
+        //     it("should error on invalid document hash", async () =>
+        //     {
+        //         await ethNOS.submitDocument(
+        //             emptyDocument,
+        //             [accounts[1]]);
+        //     });
+
+
+        // });
+
         // TODO: temporary
         describe("TMP - without GSN", () =>
         {
@@ -41,11 +61,11 @@ contract("EthNOS", async accounts =>
 
             it("signDocument direct", async () =>
             {
-                assert.equal(await ethNOS.signDocumentCalled(), false, "signDocumentCalled set before");
+                // assert.equal(await ethNOS.signDocumentCalled(), false, "signDocumentCalled set before");
 
                 await ethNOS.signDocument('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
 
-                assert.equal(await ethNOS.signDocumentCalled(), true, "signDocumentCalled not set");
+                // assert.equal(await ethNOS.signDocumentCalled(), true, "signDocumentCalled not set");
             });
         });
     }
@@ -114,9 +134,9 @@ contract("EthNOS", async accounts =>
 
                 await ethNOS.submitDocument('0xcec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', [account.address], {value: web3.utils.toWei('2')});
 
-                console.log("BEFORE: signDocument " + await ethNOS.signDocumentCalled());
-                console.log("BEFORE: approveRelayedSignDocumentCall " + await ethNOS.approveRelayedSignDocumentCallCalledDocumentHash() + " " + await ethNOS.approveRelayedSignDocumentCallMaxAmountCharged() + " " + await ethNOS.approveRelayedSignDocumentCallOriginalSender());
-                console.log("BEFORE: chargeRelayedSignDocumentCall " + await ethNOS.chargeRelayedSignDocumentCallCalledDocumentHash() + " " + await ethNOS.chargeRelayedSignDocumentCallAmountCharged());
+                // console.log("BEFORE: signDocument " + await ethNOS.signDocumentCalled());
+                // console.log("BEFORE: approveRelayedSignDocumentCall " + await ethNOS.approveRelayedSignDocumentCallCalledDocumentHash() + " " + await ethNOS.approveRelayedSignDocumentCallMaxAmountCharged() + " " + await ethNOS.approveRelayedSignDocumentCallOriginalSender());
+                // console.log("BEFORE: chargeRelayedSignDocumentCall " + await ethNOS.chargeRelayedSignDocumentCallCalledDocumentHash() + " " + await ethNOS.chargeRelayedSignDocumentCallAmountCharged());
                 console.log("BEFORE: balance " + await ethNOS.getDocumentSigningBalance('0xcec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53'));
 
                 const contract = await new ethers.Contract(
@@ -128,12 +148,12 @@ contract("EthNOS", async accounts =>
 
                 await callSignDocumentThroughGsn(contract, provider);
 
-                console.log("AFTER: signDocument " + await ethNOS.signDocumentCalled());
-                console.log("AFTER: approveRelayedSignDocumentCall " + await ethNOS.approveRelayedSignDocumentCallCalledDocumentHash() + " " + await ethNOS.approveRelayedSignDocumentCallMaxAmountCharged() + " " + await ethNOS.approveRelayedSignDocumentCallOriginalSender());
-                console.log("AFTER: chargeRelayedSignDocumentCall " + await ethNOS.chargeRelayedSignDocumentCallCalledDocumentHash() + " " + await ethNOS.chargeRelayedSignDocumentCallAmountCharged());
+                // console.log("AFTER: signDocument " + await ethNOS.signDocumentCalled());
+                // console.log("AFTER: approveRelayedSignDocumentCall " + await ethNOS.approveRelayedSignDocumentCallCalledDocumentHash() + " " + await ethNOS.approveRelayedSignDocumentCallMaxAmountCharged() + " " + await ethNOS.approveRelayedSignDocumentCallOriginalSender());
+                // console.log("AFTER: chargeRelayedSignDocumentCall " + await ethNOS.chargeRelayedSignDocumentCallCalledDocumentHash() + " " + await ethNOS.chargeRelayedSignDocumentCallAmountCharged());
                 console.log("AFTER: balance " + await ethNOS.getDocumentSigningBalance('0xcec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53'));
 
-                assert.equal(await ethNOS.signDocumentCalled(), true, "signDocumentCalled not set");
+                // assert.equal(await ethNOS.signDocumentCalled(), true, "signDocumentCalled not set");
             });
         });
     }

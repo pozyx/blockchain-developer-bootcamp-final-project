@@ -14,6 +14,7 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
+	// - contract unit tests (+ cleanup EthNOS.test.js)
 	// - UI: document detail
 	//   - test console output with submitted
 	//   - display
@@ -22,7 +23,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	//   - TODOs in document-detail
 	// - UI: simple submit, sign
 	// - UI: fund/withdraw, etherless sign (see OpenGSN/SimpleUse, OpenGSN React app)
-	// - contract unit tests (+ remove temporary variables in contract)
 	// - (UI: proper captions / descriptions)
 	// - (calculate post gas usage)
 	// - (UI: resolve ENS addresses)
@@ -44,9 +44,9 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	// - cleanup
 	//   - TODOs (all files incl. web)
 	//   - truffle-config.js
-	//   - EthNOS.test.js
 	//   - source code indentation + braces - make consistent everywhere
 	//   - .vscode to gitignore?
+	//   - extract Solidity types to separate files?
 
 	// TODO: notes
 	// - do not call onlyowner methods from forwarder (do not set forwarder to accounts[0])
@@ -265,6 +265,16 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		documentValid(documentHash)
 	{
 		// TODO: unit tests
+		// - revert
+		//   - (not valid)
+		//   - document already submitted
+		// - ok
+		//   - DocumentSubmitted emited
+		//   - (verifyDocument) submitter set to caller, submissionTime not zero, requiredSignatories set to input
+		//   - some signatories - (verifyDocument) CertificationPending
+		//   - no signatories - DocumentCertified emited, (verifyDocument) Certified, certificationTime equals submissionTime
+		//   - some signatories signed previously - DocumentCertified emited, (verifyDocument) Certified, certificationTime equals submissionTime
+		//   - * with ether - see tests for fundDocumentSigning
 
 		DocumentInfo storage document = documents[documentHash];
 
@@ -309,6 +319,16 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		documentValid(documentHash)
 		onlySubmitter(documentHash)
 	{
+		// TODO: unit tests
+		// - revert
+		//   - (not valid)
+		//   - not submitted
+		//   - not called by submitter
+		// - ok
+		//   - DocumentSubmissionAmended emited
+		//   - was certified - (verifyDocument) old certification is in pastCertifications
+		//   - same as tests for submitDocument + (verifyDocument) - submissionTime is updated, certificationTime is zero when not certified
+
 		DocumentInfo storage document = documents[documentHash];
 
 		if (document.certificationState == CertificationState.Certified)
@@ -363,6 +383,15 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		onlyPendingCertification(documentHash)
 	{
 		// TODO: unit tests
+		// - revert
+		//   - (not valid)
+		//   - not submitted
+		//   - not called by submitter
+		//   - not pending
+		// - ok
+		//   - DocumentSubmissionDeleted emited
+		//   - no past certifications - (verifyDocument) - NotSubmitted, submissionTime, certificationTime  is zero, (requiredsignatories is empty?)
+		//   - some past certifications - (verifyDocument) - Certified, old certification removed from pastCertifications, current certification set to old certification
 
 		DocumentInfo storage document = documents[documentHash];
 
@@ -398,7 +427,17 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		onlySubmitter(documentHash)
 		onlyPendingCertification(documentHash)
 	{
-		// TODO: unit tests
+		// TODO: * unit tests
+		// - revert
+		//   - (not valid)
+		//   - not submitted
+		//   - not called by submitter
+		//   - not pending
+		//   - no ether
+		// - ok
+		//   - DocumentSigningFunded emited
+		//   - (getDocumentSigningBalance) signing balance increased
+		//   - paymaster getRelayHubDeposit() balance increased
 
 		require(msg.value > 0, "No ether provided");
 
@@ -429,7 +468,16 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		documentValid(documentHash)
 		onlySubmitter(documentHash)
 	{
-		// TODO: unit tests
+		// TODO: * unit tests
+		// - revert
+		//   - (not valid)
+		//   - not submitted
+		//   - not called by submitter
+		//   - signing balance zero
+		// - ok
+		//   - DocumentSigningBalanceWithdrawn emited
+		//   - (getDocumentSigningBalance) full balance received
+		//   - (getDocumentSigningBalance) balance set to 0
 
 		DocumentInfo storage document = documents[documentHash];
 
@@ -459,8 +507,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		onlySubmitter(documentHash)
 		returns (uint signingBalance)
 	{
-		// TODO: unit tests
-
 		return documents[documentHash].signingBalance;
 	}
 
@@ -484,6 +530,23 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		documentValid(documentHash)
 	{
 		// TODO: unit tests
+		// - revert
+		//   - (not valid)
+		//   - already signed by sender
+		//   - * relay different function
+		//   - * not pending
+		//   - * insufficient balance
+		//   - * sender is not required signatory
+		// - ok
+		//   - DocumentSigned emited
+		//   - (verifyDocument) signatory added, signTime non zero
+		//   - not submitted
+		//   - pending and is last signatory - DocumentCertified emited, (verifyDocument) Certified, certificationTime not zero
+		//   - pending and is not last signatory - not certified
+		//   - * paymaster PreRelayed emited?
+		//   - * paymaster PostRelayed emited?
+		//   - * DocumentSigningCharged emited
+		//   - * (getDocumentSigningBalance) signing balance decreased
 
 		DocumentInfo storage document = documents[documentHash];
 
@@ -502,13 +565,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 
 		if (document.certificationState == CertificationState.CertificationPending)
 			updateDocumentCertification(documentHash, document);
-
-		// TODO: temporary
-		signDocumentCalled = true;
 	}
-
-	// TODO: temporary
-	bool public signDocumentCalled;
 
 	/**
 	 * Checks if ether-less call of signDocument (using GSN) is approved. Revert means not appproved.
@@ -527,13 +584,11 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		uint maxAmountToBeCharged,
 		address originalSender)
 		external
-		//view TODO: put back
+		view
 		onlyPaymaster
 		documentValid(documentHash)
 		onlyPendingCertification(documentHash)
 	{
-		// TODO: unit tests
-
 		DocumentInfo storage document = documents[documentHash];
 
 		require(maxAmountToBeCharged <= document.signingBalance, "Insufficient balance - not enough funds for signing the document");
@@ -550,17 +605,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		}
 
 		require(isSenderRequiredSignatory, "Sender is not required signatory");
-
-		// TODO: temporary- and make function view
-		approveRelayedSignDocumentCallCalledDocumentHash = documentHash;
-		approveRelayedSignDocumentCallMaxAmountCharged = maxAmountToBeCharged;
-		approveRelayedSignDocumentCallOriginalSender = originalSender;
 	}
-
-	// TODO: temporary
-	bytes32 public approveRelayedSignDocumentCallCalledDocumentHash;
-	uint public approveRelayedSignDocumentCallMaxAmountCharged;
-	address public approveRelayedSignDocumentCallOriginalSender;
 
 	/**
 	 * Charges ether used for ether-less document signing.
@@ -581,23 +626,13 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		external
 		onlyPaymaster
 	{
-		// TODO: unit tests
-
 		// - no need to validate the document - it was previously checked in approveRelayedSignDocumentCall
 		// (there is no way to call this function without making approveRelayedSignDocumentCall call first)
 		// - no need to validate amountCharged - it was previously checked in approveRelayedSignDocumentCall
 		documents[documentHash].signingBalance -= amountCharged;
 
 		emit DocumentSigningCharged(documentHash, amountCharged);
-
-		// TODO: temporary
-		chargeRelayedSignDocumentCallCalledDocumentHash = documentHash;
-		chargeRelayedSignDocumentCallAmountCharged = amountCharged;
 	}
-
-	// TODO: temporary
-	bytes32 public chargeRelayedSignDocumentCallCalledDocumentHash;
-	uint public chargeRelayedSignDocumentCallAmountCharged;
 
 	/**
 	 * Returns certification state of given document along with
@@ -623,8 +658,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 			CertificationInfo[] memory pastCertifications,
 			SigningInfo[] memory signatures)
 	{
-		// TODO: unit tests
-
 		DocumentInfo storage document = documents[documentHash];
 
 		return(
