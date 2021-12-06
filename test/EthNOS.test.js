@@ -7,17 +7,12 @@ const { catchRevert } = require("./exceptionsHelpers.js");
 const { advanceTimeAndBlock } = require("./advanceTimeHelper.js");
 
 contract("EthNOS", async accounts => {
+
+    // TODO: or pull below up
+
     const useGSN = process.env.NETWORK == "test_with_gsn";
 
     const emptyDocument = "0x0000000000000000000000000000000000000000000000000000000000000000";
-    const sampleDocument1 = "0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53";
-    const sampleDocument2 = "0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c54";
-    const sampleDocument3 = "0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c55";
-    const sampleDocument4 = "0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c56";
-    const sampleDocument5 = "0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c57";
-    const sampleDocument6 = "0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c58";
-    const sampleDocument7 = "0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c59";
-    const sampleDocument8 = "0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c50";
 
     const caller = accounts[0];
 
@@ -51,28 +46,31 @@ contract("EthNOS", async accounts => {
         });
 
         it("should revert on already submitted document", async () => {
+            const sampleDocument = getRandomDocument();
+
             await ethNOS.submitDocument(
-                sampleDocument1,
+                sampleDocument,
                 [accounts[1]]);
 
             await catchRevert(
                 ethNOS.submitDocument(
-                    sampleDocument1,
+                    sampleDocument,
                     [accounts[1]]));
         });
 
-        // TODO: also amend
         it("should emit DocumentSubmitted, should set submitter and submissionTime", async () => {
+            const sampleDocument = getRandomDocument();
+
             const submitResult = await ethNOS.submitDocument(
-                sampleDocument1,
+                sampleDocument,
                 [accounts[1]]);
 
             eventEmitted(
                 submitResult,
                 "DocumentSubmitted",
-                { documentHash: sampleDocument1 });
+                { documentHash: sampleDocument });
 
-            const verifyResult = await ethNOS.verifyDocument(sampleDocument1);
+            const verifyResult = await ethNOS.verifyDocument(sampleDocument);
 
             assert.equal(
                 verifyResult.submitter,
@@ -85,13 +83,14 @@ contract("EthNOS", async accounts => {
                 "currentCertification.submissionTime was not set");
         });
 
-        // TODO: also amend
         it("should set requiredSignatories and certificationState to CertificationPending", async () => {
+            const sampleDocument = getRandomDocument();
+
             await ethNOS.submitDocument(
-                sampleDocument2,
+                sampleDocument,
                 [accounts[1]]);
 
-            const verifyResult = await ethNOS.verifyDocument(sampleDocument2);
+            const verifyResult = await ethNOS.verifyDocument(sampleDocument);
 
             assert.deepEqual(
                 verifyResult.currentCertification[CertificationInfo_requiredSignatories],
@@ -104,18 +103,19 @@ contract("EthNOS", async accounts => {
                 "certificationState was not set to CertificationPending");
         });
 
-        // TODO: also amend
         it("should emit DocumentCertified, should set certificationTime and certificationState to Certified on document without required signatories", async () => {
+            const sampleDocument = getRandomDocument();
+
             const submitResult = await ethNOS.submitDocument(
-                sampleDocument3,
+                sampleDocument,
                 []);
 
             eventEmitted(
                 submitResult,
                 "DocumentCertified",
-                { documentHash: sampleDocument3 });
+                { documentHash: sampleDocument });
 
-            const verifyResult = await ethNOS.verifyDocument(sampleDocument3);
+            const verifyResult = await ethNOS.verifyDocument(sampleDocument);
 
             assert.equal(
                 verifyResult.currentCertification[CertificationInfo_certificationTime],
@@ -128,20 +128,21 @@ contract("EthNOS", async accounts => {
                 "certificationState was not set to Certified");
         });
 
-        // TODO: also amend
         it("should emit DocumentCertified, should set certificationTime and certificationState to Certified on document signed by signatory before submission", async () => {
-            await ethNOS.signDocument(sampleDocument4, { from: accounts[2] });
+            const sampleDocument = getRandomDocument();
+
+            await ethNOS.signDocument(sampleDocument, { from: accounts[2] });
 
             const submitResult = await ethNOS.submitDocument(
-                sampleDocument4,
+                sampleDocument,
                 [accounts[2]]);
 
             eventEmitted(
                 submitResult,
                 "DocumentCertified",
-                { documentHash: sampleDocument4 });
+                { documentHash: sampleDocument });
 
-            const verifyResult = await ethNOS.verifyDocument(sampleDocument4);
+            const verifyResult = await ethNOS.verifyDocument(sampleDocument);
 
             assert.equal(
                 verifyResult.currentCertification[CertificationInfo_certificationTime],
@@ -153,7 +154,6 @@ contract("EthNOS", async accounts => {
                 EthNOS.CertificationState.Certified,
                 "certificationState was not set to Certified");
         });
-
     });
 
     describe("amendDocumentSubmission", () => {
@@ -165,43 +165,49 @@ contract("EthNOS", async accounts => {
         });
 
         it("should revert on not yet submitted document", async () => {
+            const sampleDocument = getRandomDocument();
+
             await catchRevert(
                 ethNOS.amendDocumentSubmission(
-                    sampleDocument5,
+                    sampleDocument,
                     [accounts[1]]));
         });
 
         it("should revert on document submitted by someone else", async () => {
+            const sampleDocument = getRandomDocument();
+
             await ethNOS.submitDocument(
-                sampleDocument6,
+                sampleDocument,
                 [accounts[2]],
                 { from: accounts[2] });
 
             await catchRevert(
                 ethNOS.amendDocumentSubmission(
-                    sampleDocument6,
+                    sampleDocument,
                     [accounts[1]]));
         });
 
         it("should emit DocumentSubmissionAmended, should change submissionTime", async () => {
+            const sampleDocument = getRandomDocument();
+
             await ethNOS.submitDocument(
-                sampleDocument7,
+                sampleDocument,
                 [accounts[1]]);
 
-            const verifyResult1 = await ethNOS.verifyDocument(sampleDocument7);
+            const verifyResult1 = await ethNOS.verifyDocument(sampleDocument);
 
             await advanceTimeAndBlock(1000);
 
             const amendResult = await ethNOS.amendDocumentSubmission(
-                sampleDocument7,
+                sampleDocument,
                 [accounts[1]]);
 
             eventEmitted(
                 amendResult,
                 "DocumentSubmissionAmended",
-                { documentHash: sampleDocument7 });
+                { documentHash: sampleDocument });
 
-            const verifyResult2 = await ethNOS.verifyDocument(sampleDocument7);
+            const verifyResult2 = await ethNOS.verifyDocument(sampleDocument);
 
             assert.notEqual(
                 verifyResult2.currentCertification[CertificationInfo_submissionTime],
@@ -209,9 +215,237 @@ contract("EthNOS", async accounts => {
                 "currentCertification.submissionTime was not changed");
         });
 
-        //--
+        it("should set requiredSignatories and certificationState to CertificationPending and reset certificationTime", async () => {
+            const sampleDocument = getRandomDocument();
+
+            await ethNOS.submitDocument(
+                sampleDocument,
+                []);
+
+            await ethNOS.amendDocumentSubmission(
+                sampleDocument,
+                [accounts[2]]);
+
+            const verifyResult = await ethNOS.verifyDocument(sampleDocument);
+
+            assert.deepEqual(
+                verifyResult.currentCertification[CertificationInfo_requiredSignatories],
+                [accounts[2]],
+                "currentCertification.requiredSignatories was not set properly");
+
+            assert.equal(
+                verifyResult.certificationState,
+                EthNOS.CertificationState.CertificationPending,
+                "certificationState was not set to CertificationPending");
+
+            assert.equal(
+                verifyResult.currentCertification[CertificationInfo_certificationTime],
+                0,
+                "currentCertification.certificationTime was not reset");
+        });
+
+        it("should emit DocumentCertified, should set certificationTime and certificationState to Certified on document without required signatories", async () => {
+            const sampleDocument = getRandomDocument();
+
+            await ethNOS.submitDocument(
+                sampleDocument,
+                [accounts[1]]);
+
+            const submitResult = await ethNOS.amendDocumentSubmission(
+                sampleDocument,
+                []);
+
+            eventEmitted(
+                submitResult,
+                "DocumentCertified",
+                { documentHash: sampleDocument });
+
+            const verifyResult = await ethNOS.verifyDocument(sampleDocument);
+
+            assert.equal(
+                verifyResult.currentCertification[CertificationInfo_certificationTime],
+                verifyResult.currentCertification[CertificationInfo_submissionTime],
+                "currentCertification.certificationTime was not set properly");
+
+            assert.equal(
+                verifyResult.certificationState,
+                EthNOS.CertificationState.Certified,
+                "certificationState was not set to Certified");
+        });
+
+        it("should emit DocumentCertified, should set certificationTime and certificationState to Certified on document signed by signatory before submission", async () => {
+            const sampleDocument = getRandomDocument();
+
+            await ethNOS.signDocument(sampleDocument, { from: accounts[2] });
+
+            await ethNOS.submitDocument(
+                sampleDocument,
+                [accounts[1]]);
+
+            const submitResult = await ethNOS.amendDocumentSubmission(
+                sampleDocument,
+                [accounts[2]]);
+
+            eventEmitted(
+                submitResult,
+                "DocumentCertified",
+                { documentHash: sampleDocument });
+
+            const verifyResult = await ethNOS.verifyDocument(sampleDocument);
+
+            assert.equal(
+                verifyResult.currentCertification[CertificationInfo_certificationTime],
+                verifyResult.currentCertification[CertificationInfo_submissionTime],
+                "currentCertification.certificationTime was not set properly");
+
+            assert.equal(
+                verifyResult.certificationState,
+                EthNOS.CertificationState.Certified,
+                "certificationState was not set to Certified");
+        });
+
+        it("should move current certification information to past certifications on previously certified document", async () => {
+            const sampleDocument = getRandomDocument();
+
+            await ethNOS.submitDocument(
+                sampleDocument,
+                [accounts[1]]);
+
+            await ethNOS.signDocument(sampleDocument, { from: accounts[1] });
+
+            const verifyResult1 = await ethNOS.verifyDocument(sampleDocument);
+
+            await ethNOS.amendDocumentSubmission(
+                sampleDocument,
+                [accounts[2]]);
+
+            const verifyResult2 = await ethNOS.verifyDocument(sampleDocument);
+
+            assert.deepEqual(
+                verifyResult2.pastCertifications[0],
+                verifyResult1.currentCertification,
+                "currentCertification was not moved to pastCertifications");
+        });
     });
 
+    describe("deleteDocumentSubmission", () => {
+        it("should revert on invalid document", async () => {
+            await catchRevert(
+                ethNOS.deleteDocumentSubmission(emptyDocument));
+        });
+
+        it("should revert on not yet submitted document", async () => {
+            const sampleDocument = getRandomDocument();
+
+            await catchRevert(
+                ethNOS.deleteDocumentSubmission(sampleDocument));
+        });
+
+        it("should revert on document submitted by someone else", async () => {
+            const sampleDocument = getRandomDocument();
+
+            await ethNOS.submitDocument(
+                sampleDocument,
+                [accounts[2]],
+                { from: accounts[2] });
+
+            await catchRevert(
+                ethNOS.deleteDocumentSubmission(sampleDocument));
+        });
+
+        it("should revert on certified document", async () => {
+            const sampleDocument = getRandomDocument();
+
+            await ethNOS.submitDocument(
+                sampleDocument,
+                []);
+
+            await catchRevert(
+                ethNOS.deleteDocumentSubmission(sampleDocument));
+        });
+
+        it("should emit DocumentSubmissionDeleted, should set certificationState to NotSubmitted, should reset submissionTime and requiredSignatories", async () => {
+            const sampleDocument = getRandomDocument();
+
+            await ethNOS.submitDocument(
+                sampleDocument,
+                [accounts[1]]);
+
+            const deleteResult = await ethNOS.deleteDocumentSubmission(sampleDocument);
+
+            eventEmitted(
+                deleteResult,
+                "DocumentSubmissionDeleted",
+                { documentHash: sampleDocument });
+
+            const verifyResult = await ethNOS.verifyDocument(sampleDocument);
+
+            assert.equal(
+                verifyResult.certificationState,
+                EthNOS.CertificationState.NotSubmitted,
+                "certificationState was not set to NotSubmitted");
+
+            assert.equal(
+                verifyResult.currentCertification[CertificationInfo_submissionTime],
+                0,
+                "currentCertification.submissionTime was not reset");
+
+            assert.equal(
+                verifyResult.currentCertification[CertificationInfo_requiredSignatories].length,
+                0,
+                "currentCertification.requiredSignatories was not reset");
+        });
+
+        it("should set certificationState to Certified, should move last past certification to current certification on previously certified document", async () => {
+            const sampleDocument = getRandomDocument();
+
+            await ethNOS.submitDocument(
+                sampleDocument,
+                []);
+
+            await ethNOS.amendDocumentSubmission(
+                sampleDocument,
+                [accounts[1]]);
+
+            await ethNOS.signDocument(sampleDocument, { from: accounts[1] });
+
+            const verifyResult2 = await ethNOS.verifyDocument(sampleDocument);
+
+            await ethNOS.amendDocumentSubmission(
+                sampleDocument,
+                [accounts[2]]);
+
+            const verifyResult3 = await ethNOS.verifyDocument(sampleDocument);
+
+            await ethNOS.deleteDocumentSubmission(sampleDocument);
+
+            const verifyResult4 = await ethNOS.verifyDocument(sampleDocument);
+
+            assert.equal(
+                verifyResult4.certificationState,
+                EthNOS.CertificationState.Certified,
+                "certificationState was not set to Certified");
+
+            assert.equal(
+                verifyResult4.pastCertifications.length,
+                verifyResult3.pastCertifications.length - 1,
+                "certification was not moved from pastCertifications (past certifications not popped)");
+
+            assert.deepEqual(
+                verifyResult4.currentCertification,
+                verifyResult3.pastCertifications[verifyResult3.pastCertifications.length - 1],
+                "certification was not moved from pastCertifications (current certification not matching previous last past certification)");
+
+            assert.deepEqual(
+                verifyResult4.currentCertification,
+                verifyResult2.currentCertification,
+                "certification was not moved from pastCertifications (current certification not matching older current certification)");
+        });
+    });
+
+    //--
+
+    // TODO: or pull up
     function eventEmitted(result, eventName) // + optional { name: value } objects as expected arguments
     {
         const emittedEvents = result.logs.filter(l => l.event === eventName);
@@ -231,6 +465,11 @@ contract("EthNOS", async accounts => {
                     "Expected event '" + eventName + "' emit with argument '" + argumentName + "' equal to '" + argumentValue + "' but did not get match");
             }
         }
+    }
+
+    // TODO: or pull up
+    function getRandomDocument() {
+        return web3.utils.randomHex(32);
     }
 
     // TODO: temporary

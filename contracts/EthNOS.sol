@@ -15,6 +15,11 @@ contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
 	// - contract unit tests (+ cleanup EthNOS.test.js)
+	// - cleanup
+	//   - TODOs (except web)
+	//   - source code indentation + braces - make consistent everywhere
+	//   - .vscode to gitignore?
+	//   - extract Solidity types to separate files?
 	// - UI: document detail
 	//   - test console output with submitted
 	//   - display
@@ -42,11 +47,8 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	//   - (certification state chart)
 	//   - screencast
 	// - cleanup
-	//   - TODOs (all files incl. web)
+	//   - TODOs (web)
 	//   - truffle-config.js
-	//   - source code indentation + braces - make consistent everywhere
-	//   - .vscode to gitignore?
-	//   - extract Solidity types to separate files?
 
 	// TODO: notes
 	// - do not call onlyowner methods from forwarder (do not set forwarder to accounts[0])
@@ -310,11 +312,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		documentValid(documentHash)
 		onlySubmitter(documentHash)
 	{
-		// TODO: unit tests
-		// - ok
-		//   - was certified - (verifyDocument) old certification is in pastCertifications
-		//   - same as tests for submitDocument + (verifyDocument) - certificationTime is zero when not certified
-
 		DocumentInfo storage document = documents[documentHash];
 
 		if (document.certificationState == CertificationState.Certified)
@@ -368,17 +365,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		onlySubmitter(documentHash)
 		onlyPendingCertification(documentHash)
 	{
-		// TODO: unit tests
-		// - revert
-		//   - (not valid)
-		//   - not submitted
-		//   - not called by submitter
-		//   - not pending
-		// - ok
-		//   - DocumentSubmissionDeleted emited
-		//   - no past certifications - (verifyDocument) - NotSubmitted, submissionTime, certificationTime  is zero, (requiredsignatories is empty?)
-		//   - some past certifications - (verifyDocument) - Certified, old certification removed from pastCertifications, current certification set to old certification
-
 		DocumentInfo storage document = documents[documentHash];
 
 		if (document.pastCertifications.length == 0)
