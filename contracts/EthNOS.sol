@@ -17,9 +17,9 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	// - contract unit tests (+ cleanup EthNOS.test.js)
 	// - cleanup
 	//   - TODOs (except web)
-	//   - source code indentation + braces - make consistent everywhere
-	//   - .vscode to gitignore?
+	//   - source code indentation + braces - make consistent everywhere (js, ts, sol); editorconfig?
 	//   - extract Solidity types to separate files?
+	//   - truffle-config.js
 	// - UI: document detail
 	//   - test console output with submitted
 	//   - display
@@ -32,7 +32,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	// - (calculate post gas usage)
 	// - (UI: resolve ENS addresses)
 	// - (UI: fund on submit, amend/delete, show history, show orphaned signatories)
-	// - inherit library or interface? ask?
+	// - (UI: cleanup TODOs)
 	// - (console, console_with_gsn - try include migrate)
 	// - (ABI copying ok? contract address hardcoding ok?)
 	// - try clean run (contracts, tests, web)
@@ -46,9 +46,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	//   - prepare document (use example project as template)
 	//   - (certification state chart)
 	//   - screencast
-	// - cleanup
-	//   - TODOs (web)
-	//   - truffle-config.js
 
 	// TODO: notes
 	// - do not call onlyowner methods from forwarder (do not set forwarder to accounts[0])
