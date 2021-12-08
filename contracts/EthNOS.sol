@@ -17,6 +17,7 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	// - contract unit tests (+ cleanup EthNOS.test.js)
 	// - cleanup
 	//   - TODOs (except web)
+	//   - .vscode remove from git?
 	//   - source code indentation + braces - make consistent everywhere (js, ts, sol); editorconfig?
 	//   - extract Solidity types to separate files?
 	//   - truffle-config.js
