@@ -4,7 +4,8 @@ const EthNOS = artifacts.require("EthNOS.sol");
 const EthNOSPaymaster = artifacts.require("EthNOSPaymaster.sol");
 const BN = web3.utils.BN;
 const { catchRevert } = require("./exceptionsHelpers.js");
-const { advanceTimeAndBlock } = require("./advanceTimeHelper.js");
+const { advanceTimeAndBlock } = require("./advanceTimeHelpers.js");
+const { eventEmitted } = require("./testHelpers.js");
 
 contract("EthNOS", async accounts => {
 
@@ -14,7 +15,11 @@ contract("EthNOS", async accounts => {
 
     const emptyDocument = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
-    const caller = accounts[0];
+    function getRandomDocument() {
+        return web3.utils.randomHex(32);
+    }
+
+    const defaultCaller = accounts[0];
 
     const CertificationInfo_submissionTime = 0;
     const CertificationInfo_requiredSignatories = 1;
@@ -74,7 +79,7 @@ contract("EthNOS", async accounts => {
 
             assert.equal(
                 verifyResult.submitter,
-                caller,
+                defaultCaller,
                 "submitter was not set to caller");
 
             assert.notEqual(
@@ -443,52 +448,145 @@ contract("EthNOS", async accounts => {
         });
     });
 
-    //--
+    describe("signDocument", () => {
 
-    // TODO: or pull up
-    function eventEmitted(result, eventName) // + optional { name: value } objects as expected arguments
-    {
-        const emittedEvents = result.logs.filter(l => l.event === eventName);
-
-        if (emittedEvents.length == 0)
-            assert.fail("Expected event '" + eventName + "' emit but did not get one");
-        else if (emittedEvents.length > 1)
-            assert.fail("Expected 1 event '" + eventName + "' emit but did get " + emittedEvents.length);
-        else {
-            for (let i = 2; i < arguments.length; i++) {
-                const argumentName = Object.keys(arguments[i])[0];
-                const argumentValue = arguments[i][argumentName];
-
-                assert.equal(
-                    emittedEvents[0].args[argumentName],
-                    argumentValue,
-                    "Expected event '" + eventName + "' emit with argument '" + argumentName + "' equal to '" + argumentValue + "' but did not get match");
-            }
-        }
-    }
-
-    // TODO: or pull up
-    function getRandomDocument() {
-        return web3.utils.randomHex(32);
-    }
-
-    // TODO: temporary
-    if (!useGSN) {
-        describe("TMP - without GSN", () => {
-            it("Should not forwarder", async () => {
-                assert.equal(await ethNOS.trustedForwarder(), '0x0000000000000000000000000000000000000000', "forwarder is set unexpectedly");
-            });
-
-            it("signDocument direct", async () => {
-                // assert.equal(await ethNOS.signDocumentCalled(), false, "signDocumentCalled set before");
-
-                await ethNOS.signDocument('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
-
-                // assert.equal(await ethNOS.signDocumentCalled(), true, "signDocumentCalled not set");
-            });
+        it("should revert on invalid document", async () => {
+            await catchRevert(
+                ethNOS.signDocument(emptyDocument));
         });
-    }
-    else {
+
+        it("should revert on document already signed by sender", async () => {
+            const sampleDocument = getRandomDocument();
+
+            await ethNOS.signDocument(sampleDocument);
+
+            await catchRevert(
+                ethNOS.signDocument(sampleDocument));
+        });
+
+        it("should emit DocumentSigned, should add signatory (with signTime) on previously submitted document", async () => {
+            const sampleDocument = getRandomDocument();
+
+            await ethNOS.submitDocument(
+                sampleDocument,
+                [accounts[1], accounts[2]]);
+
+            const signResult = await ethNOS.signDocument(
+                sampleDocument,
+                { from: accounts[1] });
+
+            eventEmitted(
+                signResult,
+                "DocumentSigned",
+                { documentHash: sampleDocument });
+
+            const verifyResult = await ethNOS.verifyDocument(sampleDocument);
+
+            assert.equal(
+                verifyResult.signatures.length,
+                1,
+                "signatures do not contain one signatuere");
+
+            assert.equal(
+                verifyResult.signatures[0][SigningInfo_signatory],
+                accounts[1],
+                "signature signatory was not set to caller");
+
+            assert.notEqual(
+                verifyResult.signatures[0][SigningInfo_signTime],
+                0,
+                "signature signTime was not set");
+        });
+
+        it("should emit DocumentSigned, should add signatory (with signTime) on previously not submitted document", async () => {
+            const sampleDocument = getRandomDocument();
+
+            const signResult = await ethNOS.signDocument(
+                sampleDocument,
+                { from: accounts[1] });
+
+            eventEmitted(
+                signResult,
+                "DocumentSigned",
+                { documentHash: sampleDocument });
+
+            const verifyResult = await ethNOS.verifyDocument(sampleDocument);
+
+            assert.equal(
+                verifyResult.signatures.length,
+                1,
+                "signatures do not contain one signatuere");
+
+            assert.equal(
+                verifyResult.signatures[0][SigningInfo_signatory],
+                accounts[1],
+                "signature signatory was not set to caller");
+
+            assert.notEqual(
+                verifyResult.signatures[0][SigningInfo_signTime],
+                0,
+                "signature signTime was not set");
+        });
+
+        it("should have certificationState set to CertificationPending on document not signed by all required signatories", async () => {
+            const sampleDocument = getRandomDocument();
+
+            await ethNOS.submitDocument(
+                sampleDocument,
+                [accounts[1], accounts[2]]);
+
+            await ethNOS.signDocument(
+                sampleDocument,
+                { from: accounts[1] });
+
+            const verifyResult = await ethNOS.verifyDocument(sampleDocument);
+
+            assert.equal(
+                verifyResult.certificationState,
+                EthNOS.CertificationState.CertificationPending,
+                "certificationState was not set to CertificationPending");
+        });
+
+        it("should emit DocumentCertified, should set certificationTime and certificationState to Certified on document signed by all required signatories", async () => {
+            const sampleDocument = getRandomDocument();
+
+            await ethNOS.submitDocument(
+                sampleDocument,
+                [accounts[1], accounts[2]]);
+
+            await ethNOS.signDocument(
+                sampleDocument,
+                { from: accounts[1] });
+
+            const signResult = await ethNOS.signDocument(
+                sampleDocument,
+                { from: accounts[2] });
+
+            eventEmitted(
+                signResult,
+                "DocumentCertified",
+                { documentHash: sampleDocument });
+
+            const verifyResult = await ethNOS.verifyDocument(sampleDocument);
+
+            const lastSignature = verifyResult.signatures[verifyResult.signatures.length - 1];
+
+            assert.equal(
+                verifyResult.currentCertification[CertificationInfo_certificationTime],
+                lastSignature[SigningInfo_signTime],
+                "currentCertification.certificationTime was not set properly");
+
+            assert.equal(
+                verifyResult.certificationState,
+                EthNOS.CertificationState.Certified,
+                "certificationState was not set to Certified");
+        });
+    });
+
+    if (useGSN){
+
+        //--
+
         describe("TMP - with GSN", () => {
             const callSignDocumentThroughGsn = async (contract, provider) => {
                 const transaction = await contract.signDocument('0xcec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');

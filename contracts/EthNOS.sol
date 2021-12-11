@@ -19,7 +19,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	//   - TODOs (except web)
 	//   - .vscode remove from git?
 	//   - source code indentation + braces - make consistent everywhere (js, ts, sol); editorconfig?
-	//   - extract Solidity types to separate files?
 	//   - truffle-config.js
 	// - UI: document detail
 	//   - test console output with submitted
@@ -501,18 +500,11 @@ contract EthNOS is BaseRelayRecipient, Ownable
 	{
 		// TODO: unit tests
 		// - revert
-		//   - (not valid)
-		//   - already signed by sender
 		//   - * relay different function
 		//   - * not pending
 		//   - * insufficient balance
 		//   - * sender is not required signatory
 		// - ok
-		//   - DocumentSigned emited
-		//   - (verifyDocument) signatory added, signTime non zero
-		//   - not submitted
-		//   - pending and is last signatory - DocumentCertified emited, (verifyDocument) Certified, certificationTime not zero
-		//   - pending and is not last signatory - not certified
 		//   - * paymaster PreRelayed emited?
 		//   - * paymaster PostRelayed emited?
 		//   - * DocumentSigningCharged emited
