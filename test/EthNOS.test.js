@@ -9,8 +9,6 @@ const { eventEmitted } = require("./testHelpers.js");
 
 contract("EthNOS", async accounts => {
 
-    // TODO: or pull below up
-
     const useGSN = process.env.NETWORK == "test_with_gsn";
 
     const emptyDocument = "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -43,6 +41,7 @@ contract("EthNOS", async accounts => {
     }
 
     describe("submitDocument", () => {
+
         it("should revert on invalid document", async () => {
             await catchRevert(
                 ethNOS.submitDocument(
@@ -162,6 +161,7 @@ contract("EthNOS", async accounts => {
     });
 
     describe("amendDocumentSubmission", () => {
+
         it("should revert on invalid document", async () => {
             await catchRevert(
                 ethNOS.amendDocumentSubmission(
@@ -334,6 +334,7 @@ contract("EthNOS", async accounts => {
     });
 
     describe("deleteDocumentSubmission", () => {
+
         it("should revert on invalid document", async () => {
             await catchRevert(
                 ethNOS.deleteDocumentSubmission(emptyDocument));
@@ -478,7 +479,7 @@ contract("EthNOS", async accounts => {
             eventEmitted(
                 signResult,
                 "DocumentSigned",
-                { documentHash: sampleDocument });
+                { documentHash: sampleDocument }, { signatory: accounts[1] });
 
             const verifyResult = await ethNOS.verifyDocument(sampleDocument);
 
@@ -508,7 +509,7 @@ contract("EthNOS", async accounts => {
             eventEmitted(
                 signResult,
                 "DocumentSigned",
-                { documentHash: sampleDocument });
+                { documentHash: sampleDocument }, { signatory: accounts[1] });
 
             const verifyResult = await ethNOS.verifyDocument(sampleDocument);
 
@@ -583,8 +584,180 @@ contract("EthNOS", async accounts => {
         });
     });
 
-    if (useGSN){
+    if (useGSN) {
 
+        describe("getDocumentSigningBalance", () => {
+
+            it("should revert on invalid document", async () => {
+                await catchRevert(
+                    ethNOS.getDocumentSigningBalance(
+                        emptyDocument));
+            });
+
+            it("should revert on document submitted by someone else", async () => {
+                const sampleDocument = getRandomDocument();
+
+                await ethNOS.submitDocument(
+                    sampleDocument,
+                    [accounts[2]],
+                    { from: accounts[1] });
+
+                await catchRevert(
+                    ethNOS.getDocumentSigningBalance(
+                        sampleDocument));
+            });
+        });
+
+        describe("fundDocumentSigning", () => {
+
+            it("should revert on invalid document", async () => {
+                await catchRevert(
+                    ethNOS.fundDocumentSigning(
+                        emptyDocument,
+                        { value: web3.utils.toWei('1') }));
+            });
+
+            it("should revert on not yet submitted document", async () => {
+                const sampleDocument = getRandomDocument();
+
+                await catchRevert(
+                    ethNOS.fundDocumentSigning(
+                        sampleDocument,
+                        { value: web3.utils.toWei('1') }));
+            });
+
+            it("should revert on document submitted by someone else", async () => {
+                const sampleDocument = getRandomDocument();
+
+                await ethNOS.submitDocument(
+                    sampleDocument,
+                    [accounts[2]],
+                    { from: accounts[1] });
+
+                await catchRevert(
+                    ethNOS.fundDocumentSigning(
+                        sampleDocument,
+                        { value: web3.utils.toWei('1') }));
+            });
+
+            it("should revert on document not pending certification", async () => {
+                const sampleDocument = getRandomDocument();
+
+                await ethNOS.submitDocument(
+                    sampleDocument,
+                    [accounts[1]]);
+
+                await ethNOS.signDocument(
+                    sampleDocument,
+                    { from: accounts[1] });
+
+                await catchRevert(
+                    ethNOS.fundDocumentSigning(
+                        sampleDocument,
+                        { value: web3.utils.toWei('1') }));
+            });
+
+            it("should revert on sending zero ether", async () => {
+                const sampleDocument = getRandomDocument();
+
+                await ethNOS.submitDocument(
+                    sampleDocument,
+                    [accounts[1]]);
+
+                await catchRevert(
+                    ethNOS.fundDocumentSigning(
+                        sampleDocument,
+                        { value: 0 }));
+            });
+
+            it("should emit DocumentSigningFunded, should increase document signing balance (both in EthNOS and in relay hub contract)", async () => {
+                const sampleDocument = getRandomDocument();
+                const fundingAmount = web3.utils.toWei('1');
+
+                const originalRelayHubBalance = new BN(
+                    await web3.eth.getBalance(
+                        await ethNOSPaymaster.getHubAddr()));
+
+                await ethNOS.submitDocument(
+                    sampleDocument,
+                    [accounts[1]]);
+
+                const fundResult = await ethNOS.fundDocumentSigning(
+                    sampleDocument,
+                    { value: fundingAmount });
+
+                eventEmitted(
+                    fundResult,
+                    "DocumentSigningFunded",
+                    { documentHash: sampleDocument }, { amount: fundingAmount });
+
+                const ethNOSBalance = await ethNOS.getDocumentSigningBalance(sampleDocument);
+
+                const relayHubBalance = new BN(
+                    await web3.eth.getBalance(
+                        await ethNOSPaymaster.getHubAddr()));
+
+                assert.equal(
+                    ethNOSBalance,
+                    fundingAmount,
+                    "funding amount was not set properly (EthNOS contract)");
+
+                assert.equal(
+                    relayHubBalance.sub(originalRelayHubBalance),
+                    fundingAmount,
+                    "funding amount was not set properly (relay hub contract)");
+            });
+        });
+
+        describe("submitDocument (with funding)", () => {
+
+            it("should revert on immediately certified document", async () => {
+                const sampleDocument = getRandomDocument();
+
+                await catchRevert(
+                    ethNOS.submitDocument(
+                        sampleDocument,
+                        [],
+                        { value: web3.utils.toWei('1'), gas: 6721975 })); // TODO: why this needs more gas, and how much?
+            });
+
+            it("should emit DocumentSigningFunded, should increase document signing balance (both in EthNOS and in relay hub contract)", async () => {
+                const sampleDocument = getRandomDocument();
+                const fundingAmount = web3.utils.toWei('1');
+
+                const originalRelayHubBalance = new BN(
+                    await web3.eth.getBalance(
+                        await ethNOSPaymaster.getHubAddr()));
+
+                const submitResult = await ethNOS.submitDocument(
+                    sampleDocument,
+                    [accounts[1]],
+                    { value: fundingAmount });
+
+                eventEmitted(
+                    submitResult,
+                    "DocumentSigningFunded",
+                    { documentHash: sampleDocument }, { amount: fundingAmount });
+
+                const ethNOSBalance = await ethNOS.getDocumentSigningBalance(sampleDocument);
+
+                const relayHubBalance = new BN(
+                    await web3.eth.getBalance(
+                        await ethNOSPaymaster.getHubAddr()));
+
+                assert.equal(
+                    ethNOSBalance,
+                    fundingAmount,
+                    "funding amount was not set properly (EthNOS contract)");
+
+                assert.equal(
+                    relayHubBalance.sub(originalRelayHubBalance),
+                    fundingAmount,
+                    "funding amount was not set properly (relay hub contract)");
+            });
+        });
+
+        // TODO:
         //--
 
         describe("TMP - with GSN", () => {

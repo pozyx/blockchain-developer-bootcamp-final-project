@@ -263,9 +263,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		payable
 		documentValid(documentHash)
 	{
-		// TODO: unit tests
-		// - * with ether - see tests for fundDocumentSigning
-
 		DocumentInfo storage document = documents[documentHash];
 
 		require(document.submitter == address(0), "Document was already submitted");
@@ -396,18 +393,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		onlySubmitter(documentHash)
 		onlyPendingCertification(documentHash)
 	{
-		// TODO: * unit tests
-		// - revert
-		//   - (not valid)
-		//   - not submitted
-		//   - not called by submitter
-		//   - not pending
-		//   - no ether
-		// - ok
-		//   - DocumentSigningFunded emited
-		//   - (getDocumentSigningBalance) signing balance increased
-		//   - paymaster getRelayHubDeposit() balance increased
-
 		require(msg.value > 0, "No ether provided");
 
 		DocumentInfo storage document = documents[documentHash];
