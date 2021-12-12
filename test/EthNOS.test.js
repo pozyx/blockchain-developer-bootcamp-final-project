@@ -672,39 +672,43 @@ contract("EthNOS", async accounts => {
 
             it("should emit DocumentSigningFunded, should increase document signing balance (both in EthNOS and in relay hub contract)", async () => {
                 const sampleDocument = getRandomDocument();
-                const fundingAmount = web3.utils.toWei('1');
-
-                const originalRelayHubBalance = new BN(
-                    await web3.eth.getBalance(
-                        await ethNOSPaymaster.getHubAddr()));
+                const initialFundingAmount = web3.utils.toWei('2');
+                const newFundingAmount = web3.utils.toWei('1');
 
                 await ethNOS.submitDocument(
                     sampleDocument,
-                    [accounts[1]]);
+                    [accounts[1]],
+                    { value: initialFundingAmount });
+
+                const initialEthNOSBalance = await ethNOS.getDocumentSigningBalance(sampleDocument);
+
+                const initialRelayHubBalance = new BN(
+                    await web3.eth.getBalance(
+                        await ethNOSPaymaster.getHubAddr()));
 
                 const fundResult = await ethNOS.fundDocumentSigning(
                     sampleDocument,
-                    { value: fundingAmount });
+                    { value: newFundingAmount });
 
                 eventEmitted(
                     fundResult,
                     "DocumentSigningFunded",
-                    { documentHash: sampleDocument }, { amount: fundingAmount });
+                    { documentHash: sampleDocument }, { amount: newFundingAmount });
 
-                const ethNOSBalance = await ethNOS.getDocumentSigningBalance(sampleDocument);
+                const newEthNOSBalance = await ethNOS.getDocumentSigningBalance(sampleDocument);
 
-                const relayHubBalance = new BN(
+                const newRelayHubBalance = new BN(
                     await web3.eth.getBalance(
                         await ethNOSPaymaster.getHubAddr()));
 
                 assert.equal(
-                    ethNOSBalance,
-                    fundingAmount,
+                    newEthNOSBalance.sub(initialEthNOSBalance),
+                    newFundingAmount,
                     "funding amount was not set properly (EthNOS contract)");
 
                 assert.equal(
-                    relayHubBalance.sub(originalRelayHubBalance),
-                    fundingAmount,
+                    newRelayHubBalance.sub(initialRelayHubBalance),
+                    newFundingAmount,
                     "funding amount was not set properly (relay hub contract)");
             });
         });
@@ -725,7 +729,7 @@ contract("EthNOS", async accounts => {
                 const sampleDocument = getRandomDocument();
                 const fundingAmount = web3.utils.toWei('1');
 
-                const originalRelayHubBalance = new BN(
+                const initialRelayHubBalance = new BN(
                     await web3.eth.getBalance(
                         await ethNOSPaymaster.getHubAddr()));
 
@@ -751,14 +755,102 @@ contract("EthNOS", async accounts => {
                     "funding amount was not set properly (EthNOS contract)");
 
                 assert.equal(
-                    relayHubBalance.sub(originalRelayHubBalance),
+                    relayHubBalance.sub(initialRelayHubBalance),
                     fundingAmount,
                     "funding amount was not set properly (relay hub contract)");
             });
         });
 
-        // TODO:
-        //--
+        describe("withdrawDocumentSigningBalance", () => {
+
+            it("should revert on invalid document", async () => {
+                await catchRevert(
+                    ethNOS.withdrawDocumentSigningBalance(emptyDocument));
+            });
+
+            it("should revert on not yet submitted document", async () => {
+                const sampleDocument = getRandomDocument();
+
+                await catchRevert(
+                    ethNOS.withdrawDocumentSigningBalance(sampleDocument));
+            });
+
+            it("should revert on document submitted by someone else", async () => {
+                const sampleDocument = getRandomDocument();
+
+                await ethNOS.submitDocument(
+                    sampleDocument,
+                    [accounts[2]],
+                    { from: accounts[1] });
+
+                await ethNOS.fundDocumentSigning(
+                    sampleDocument,
+                    { from: accounts[1], value: web3.utils.toWei('1') });
+
+                await catchRevert(
+                    ethNOS.withdrawDocumentSigningBalance(sampleDocument));
+            });
+
+            it("should revert on document with zero signing balance", async () => {
+                const sampleDocument = getRandomDocument();
+
+                await ethNOS.submitDocument(
+                    sampleDocument,
+                    [accounts[2]]);
+
+                await catchRevert(
+                    ethNOS.withdrawDocumentSigningBalance(sampleDocument));
+            });
+
+            it("should emit DocumentSigningBalanceWithdrawn, should decrease document signing balance (both in EthNOS and in relay hub contract), should receive the balance", async () => {
+                const sampleDocument = getRandomDocument();
+                const fundingAmount = web3.utils.toWei('1');
+
+                await ethNOS.submitDocument(
+                    sampleDocument,
+                    [accounts[1]],
+                    { value: fundingAmount });
+
+                const initialRelayHubBalance = new BN(
+                    await web3.eth.getBalance(
+                        await ethNOSPaymaster.getHubAddr()));
+
+                const initialCallerBalance = new BN(await web3.eth.getBalance(defaultCaller));
+
+                const withdrawResult = await ethNOS.withdrawDocumentSigningBalance(sampleDocument);
+
+                eventEmitted(
+                    withdrawResult,
+                    "DocumentSigningBalanceWithdrawn",
+                    { documentHash: sampleDocument }, { amount: fundingAmount });
+
+                const newEthNOSBalance = await ethNOS.getDocumentSigningBalance(sampleDocument);
+
+                const newRelayHubBalance = new BN(
+                    await web3.eth.getBalance(
+                        await ethNOSPaymaster.getHubAddr()));
+
+                const newCallerBalance = new BN(await web3.eth.getBalance(defaultCaller));
+
+                assert.equal(
+                    newEthNOSBalance,
+                    0,
+                    "funding amount was not decreased properly (EthNOS contract)");
+
+                assert.equal(
+                    initialRelayHubBalance.sub(newRelayHubBalance),
+                    fundingAmount,
+                    "funding amount was not decreased properly (relay hub contract)");
+
+                // not exact comparison because of transaction cost
+                assert.equal(
+                    new BN(fundingAmount).sub(
+                        newCallerBalance.sub(initialCallerBalance))
+                        .cmp(new BN(web3.utils.toWei('0.01'))),
+                    -1,
+                    "funding amount was withdrawn properly");
+            });
+        });
 
         describe("TMP - with GSN", () => {
             const callSignDocumentThroughGsn = async (contract, provider) => {
@@ -770,36 +862,6 @@ contract("EthNOS", async accounts => {
                 //     filter(entry => entry != null)[0];
                 // return result.values['0']
             };  // callThroughGsn
-
-            it("Should have forwarder", async () => {
-                assert.equal(await ethNOS.trustedForwarder(), await ethNOSPaymaster.trustedForwarder(), "forwarder is not set properly");
-            });
-
-            it("fundDocumentSigning", async () => {
-                await ethNOS.submitDocument('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', [accounts[1]]);
-                const originalFunds = new BN(await web3.eth.getBalance(await ethNOSPaymaster.getHubAddr()));
-                await ethNOS.fundDocumentSigning('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', { value: 5 })
-                const newFunds = new BN(await web3.eth.getBalance(await ethNOSPaymaster.getHubAddr()));
-                assert.equal(newFunds.sub(originalFunds).toNumber(), 5, "not funded");
-                const newFundsDirect = await ethNOS.getDocumentSigningBalance('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
-                assert.equal(newFundsDirect, 5, "not funded (direct)");
-            });
-
-            it("withdrawFunds", async () => {
-                await ethNOS.submitDocument('0xaec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', [accounts[1]]);
-                await ethNOS.fundDocumentSigning('0xaec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', { value: web3.utils.toWei('2') })
-                const originalFunds = new BN(await web3.eth.getBalance(await ethNOSPaymaster.getHubAddr()));
-                const meOriginalFunds = new BN(await web3.eth.getBalance(accounts[0]));
-                const originalFundsDirect = await ethNOS.getDocumentSigningBalance('0xaec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
-                assert.equal(originalFundsDirect, web3.utils.toWei('2'), "not funded (direct)");
-                await ethNOS.withdrawDocumentSigningBalance('0xaec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
-                const newFunds = new BN(await web3.eth.getBalance(await ethNOSPaymaster.getHubAddr()));
-                const meNewFunds = new BN(await web3.eth.getBalance(accounts[0]));
-                const newFundsDirect = await ethNOS.getDocumentSigningBalance('0xaec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
-                assert.isTrue(originalFunds.sub(newFunds).eq(new BN(web3.utils.toWei('2'))), "not withdrawn from there");
-                assert.equal(meNewFunds.sub(meOriginalFunds).cmp(new BN(web3.utils.toWei('1.9'))), 1, "not withdrawn to me");
-                assert.equal(newFundsDirect, 0, "not widthdrawn (direct)");
-            });
 
             it("signDocument", async () => {
                 const provider = new ethers.providers.Web3Provider(

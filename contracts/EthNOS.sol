@@ -422,17 +422,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		documentValid(documentHash)
 		onlySubmitter(documentHash)
 	{
-		// TODO: * unit tests
-		// - revert
-		//   - (not valid)
-		//   - not submitted
-		//   - not called by submitter
-		//   - signing balance zero
-		// - ok
-		//   - DocumentSigningBalanceWithdrawn emited
-		//   - (getDocumentSigningBalance) full balance received
-		//   - (getDocumentSigningBalance) balance set to 0
-
 		DocumentInfo storage document = documents[documentHash];
 
 		require(document.signingBalance > 0, "No balance to withdraw");
