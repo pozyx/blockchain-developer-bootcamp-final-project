@@ -107,4 +107,4 @@ dist
 .tern-port
 
 # IDE - VSCode
-.vscode/*
+.vscode
