@@ -14,9 +14,6 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
-	// - .vscode
-	//   - Solidity version elsewhere?
-	//   - remove from git?
 	// - source code style (indentation, braces, ...)
 	//   - make consistent everywhere (js, ts, sol)
 	//   - editorconfig?
