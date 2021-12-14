@@ -1,5 +1,4 @@
 {
-    "solidity.compileUsingRemoteVersion": "v0.8.10+commit.fc410830",
     "gitlens.currentLine.enabled": false,
     "gitlens.hovers.currentLine.over": "line",
     "gitlens.codeLens.enabled": false
