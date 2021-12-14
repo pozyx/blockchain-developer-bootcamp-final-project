@@ -14,53 +14,79 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
-	// - review what to do
-	// - cleanup
-	//   - TODOs (except web)
-	//   - .vscode remove from git?
-	//   - source code indentation + braces - make consistent everywhere (js, ts, sol); editorconfig?
-	//   - truffle-config.js
+	// - test: deployed() instead of new()?
+	// - try Solidity 0.8.10
+	// - .vscode
+	//   - Solidity version elsewhere?
+	//   - remove from git?
+	// - source code style (indentation, braces, ...)
+	//   - make consistent everywhere (js, ts, sol)
+	//   - editorconfig?
+	// - dependencies
+	//   - web3 needed?
+	//   - ethers dev dependency?
+	//   - @openzeppelin not missing?
+	//   - opengsn ok? sol need contracts, tests need cli, (provider) - dev dependency?
+	//     - validate this is not required: node_modules/@opengsn/dev/package.json: "main": "dist/index.js" changed to "main": "dist/src/index.js"
+	//   - try update packages
+	//   - try clean run
+	// - scripts
+	//   - test (+ _with_gsn)
+	//     - use "local" network?
+	//     - without running ganache explicitly?
+	//   - run_local (+ _with_gsn)
+	//     - rename console?
+	//     - use "local" network?
+	//     - without running ganache explicitly?
+	//     - include migrate
+	//   - deploy (rinkeby, live?)
+	//     - env missing?
+	// - review & fix launch.sh (if still needed)
+	// - cleanup networks
+	//   - remove ropsten?
+	//   - keep only local, rinkeby, live?
+	// - delete notes if manual run is not needed
+	// - clean-up truffle-config.js
+	// - try clean run
+	//   - tests
+	//   - deploy
+
 	// - UI: document detail
 	//   - test console output with submitted
 	//   - display
 	//   - show events
-	//   - more prominent go back to document-input
+	//   - more prominent "go back to document-input"
 	//   - TODOs in document-detail
 	// - UI: simple submit, sign
-	// - UI: fund/withdraw, etherless sign (see OpenGSN/SimpleUse, OpenGSN React app)
+	// - UI: fund / withdraw, etherless sign (see OpenGSN/SimpleUse, OpenGSN React app)
 	// - (UI: proper captions / descriptions)
-	// - (calculate post gas usage)
 	// - (UI: resolve ENS addresses)
 	// - (UI: fund on submit, amend/delete, show history, show orphaned signatories)
 	// - (UI: cleanup TODOs)
-	// - (console, console_with_gsn - try include migrate)
-	// - (ABI copying ok? contract address hardcoding ok?)
-	// - try clean run (contracts, tests, web)
+	// - (UI: ABI copying ok? contract address hardcoding ok?)
+	// - (calculate and set post gas usage)
+	// - (can required amount for etherless signing be calculated?)
+	// - try clean run
+	//    - tests
+	//    - web
 	// - deploy
 	//   - smart contracts (Rinkeby)
-	//   - web (hosting)
 	//   - (verify and publish source code on etherscan)
+	//   - web (hosting)
 	// - prepare for submission
 	//   - amend and document design pattern decisions
 	//   - amend and document attack vectors protections
-	//   - prepare document (use example project as template)
+	//   - amend/prepare README.md (use example project as template)
 	//   - (certification state chart)
 	//   - screencast
 
 	// TODO: notes
-	// - do not call onlyowner methods from forwarder (do not set forwarder to accounts[0])
 	// - use yarn (opengsn was not buildable in npm)
-	// - node_modules/@opengsn/dev/package.json: "main": "dist/index.js" changed to "main": "dist/src/index.js" - maybe not needed
-	// - await web3.eth.getBalance(accounts[0])
-	// - await web3.eth.getBalance(await ethNOSPaymaster.getHubAddr())
-	// - await ethNOS.fundDocumentSigning('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', {value: 5})
-	// - Run Ganache: net=`date "+%j%H%M%S"` && ganache-cli --networkId $net --chainId $net -v
-	// - Run GSN: gsn start
-	// - Run Truffle: truffle console
 	// - GSN worked on Rinkeby, not Ropsten
-	// - ethNOS.signDocument('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53', { from: accounts[1] });
-	// - ethNOS.verifyDocument('0xbec921276c8067fe0c82def3e5ecfd8447f1961bc85768c2a56e6bd26d3c0c53');
-	// - assert.equal(x.certificationState, EthNOS.enums.CertificationState.NotSubmitted);
+	// - manual run:
+	//   - run Ganache: net=`date "+%j%H%M%S"` && ganache-cli --networkId $net --chainId $net -v
+	//   - run GSN: gsn start
+	//   - run Truffle: truffle console
 
 	/// Certification state of document.
 	enum CertificationState
@@ -376,7 +402,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		emit DocumentSubmissionDeleted(documentHash);
 	}
 
-	// TODO: can required amount be calculated?
 	/**
 	 * Funds paymaster (relay hub) with ether to allow ether-less signing (using fundDocumentSigning) by required signatories using GSN.
 	 * Amount will be usable only for signing the specified document.

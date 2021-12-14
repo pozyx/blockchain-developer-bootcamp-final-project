@@ -49,8 +49,6 @@ contract EthNOSPaymaster is BasePaymaster
 		gasUsedByPost = _gasUsedByPost;
 	}
 
-	// TODO: override getGasAndDataLimits? probably not
-
 	/**
 	 * Only calls to EthNOS contract of function signDocument are allowed to be relayed.
 	 * EthNOS contract is queried for funding approval.

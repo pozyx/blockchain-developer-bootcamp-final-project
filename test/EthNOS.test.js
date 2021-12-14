@@ -13,7 +13,7 @@ contract("EthNOS", async accounts => {
 
     const emptyDocument = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
-    const defaultCaller = accounts[0];
+    const defaultSender = accounts[0];
 
     const CertificationInfo_submissionTime = 0;
     const CertificationInfo_requiredSignatories = 1;
@@ -24,7 +24,7 @@ contract("EthNOS", async accounts => {
     let ethNOS;
     let ethNOSPaymaster;
     let providerForGSNCalls;
-    let etherlessCaller;
+    let etherlessSender;
     let ethNOSForGSNCalls;
     let ethNOSPaymasterForGSNCalls;
 
@@ -47,7 +47,7 @@ contract("EthNOS", async accounts => {
                     .init());
 
             const accountForGSNCalls = providerForGSNCalls.provider.newAccount();
-            etherlessCaller = accountForGSNCalls.address;
+            etherlessSender = accountForGSNCalls.address;
 
             ethNOSForGSNCalls = await new ethers.Contract(
                 ethNOS.address,
@@ -110,8 +110,8 @@ contract("EthNOS", async accounts => {
 
             assert.equal(
                 verifyResult.submitter,
-                defaultCaller,
-                "submitter was not set to caller");
+                defaultSender,
+                "submitter was not set to sender");
 
             assert.notEqual(
                 verifyResult.currentCertification[CertificationInfo_submissionTime],
@@ -488,7 +488,7 @@ contract("EthNOS", async accounts => {
                 ethNOS.signDocument(emptyDocument));
         });
 
-        it("should revert on document already signed by caller", async () => {
+        it("should revert on document already signed by sender", async () => {
             const sampleDocument = getRandomDocument();
 
             await ethNOS.signDocument(sampleDocument);
@@ -523,7 +523,7 @@ contract("EthNOS", async accounts => {
             assert.equal(
                 verifyResult.signatures[0][SigningInfo_signatory],
                 accounts[1],
-                "signature signatory was not set to caller");
+                "signature signatory was not set to sender");
 
             assert.notEqual(
                 verifyResult.signatures[0][SigningInfo_signTime],
@@ -553,7 +553,7 @@ contract("EthNOS", async accounts => {
             assert.equal(
                 verifyResult.signatures[0][SigningInfo_signatory],
                 accounts[1],
-                "signature signatory was not set to caller");
+                "signature signatory was not set to sender");
 
             assert.notEqual(
                 verifyResult.signatures[0][SigningInfo_signTime],
@@ -847,7 +847,7 @@ contract("EthNOS", async accounts => {
                     await web3.eth.getBalance(
                         await ethNOSPaymaster.getHubAddr()));
 
-                const initialCallerBalance = new BN(await web3.eth.getBalance(defaultCaller));
+                const initialSenderBalance = new BN(await web3.eth.getBalance(defaultSender));
 
                 const withdrawResult = await ethNOS.withdrawDocumentSigningBalance(sampleDocument);
 
@@ -862,7 +862,7 @@ contract("EthNOS", async accounts => {
                     await web3.eth.getBalance(
                         await ethNOSPaymaster.getHubAddr()));
 
-                const newCallerBalance = new BN(await web3.eth.getBalance(defaultCaller));
+                const newSenderBalance = new BN(await web3.eth.getBalance(defaultSender));
 
                 assert.equal(
                     newSigningBalance,
@@ -877,10 +877,10 @@ contract("EthNOS", async accounts => {
                 // not exact comparison because of transaction cost
                 assert.equal(
                     new BN(fundingAmount).sub(
-                        newCallerBalance.sub(initialCallerBalance))
+                        newSenderBalance.sub(initialSenderBalance))
                         .cmp(new BN(web3.utils.toWei("0.01"))),
                     -1,
-                    "signing balance was not withdrawn to caller properly");
+                    "signing balance was not withdrawn to sender properly");
             });
         });
 
@@ -901,24 +901,24 @@ contract("EthNOS", async accounts => {
 
                 await ethNOS.submitDocument(
                     sampleDocument,
-                    [defaultCaller],
+                    [defaultSender],
                     { value: web3.utils.toWei("2") });
 
                 await ethNOS.signDocument(
                     sampleDocument,
-                    { from: defaultCaller });
+                    { from: defaultSender });
 
                 await catchPaymasterReject(
                     callViaGSN(
                         ethNOSForGSNCalls.signDocument(sampleDocument)));
             });
 
-            it("should be rejected by paymaster on document not having caller among required signatories", async () => {
+            it("should be rejected by paymaster on document not having sender among required signatories", async () => {
                 const sampleDocument = getRandomDocument();
 
                 await ethNOS.submitDocument(
                     sampleDocument,
-                    [defaultCaller],
+                    [defaultSender],
                     { value: web3.utils.toWei("2") });
 
                 await catchPaymasterReject(
@@ -931,7 +931,7 @@ contract("EthNOS", async accounts => {
 
                 await ethNOS.submitDocument(
                     sampleDocument,
-                    [etherlessCaller],
+                    [etherlessSender],
                     { value: web3.utils.toWei("0") });
 
                 await catchPaymasterReject(
@@ -944,23 +944,23 @@ contract("EthNOS", async accounts => {
 
                 await ethNOS.submitDocument(
                     sampleDocument,
-                    [etherlessCaller],
+                    [etherlessSender],
                     { value: web3.utils.toWei("2") });
 
                 const initialSigningBalance = await ethNOS.getDocumentSigningBalance(sampleDocument);
-                const initialCallerBalance = new BN(await web3.eth.getBalance(etherlessCaller));
+                const initialSenderBalance = new BN(await web3.eth.getBalance(etherlessSender));
 
                 const signReceipt = await callViaGSN(
                     ethNOSForGSNCalls.signDocument(sampleDocument));
 
                 const newSigningBalance = await ethNOS.getDocumentSigningBalance(sampleDocument);
-                const newCallerBalance = new BN(await web3.eth.getBalance(etherlessCaller));
+                const newSenderBalance = new BN(await web3.eth.getBalance(etherlessSender));
 
                 eventEmittedEx(
                     signReceipt,
                     "DocumentSigned",
                     ethNOSForGSNCalls.interface,
-                    { documentHash: sampleDocument }, { signatory: etherlessCaller });
+                    { documentHash: sampleDocument }, { signatory: etherlessSender });
 
                 eventEmittedEx(
                     signReceipt,
@@ -989,8 +989,8 @@ contract("EthNOS", async accounts => {
 
                 assert.equal(
                     verifyResult.signatures[0][SigningInfo_signatory],
-                    etherlessCaller,
-                    "signature signatory was not set to caller");
+                    etherlessSender,
+                    "signature signatory was not set to sender");
 
                 assert.notEqual(
                     verifyResult.signatures[0][SigningInfo_signTime],
@@ -1003,9 +1003,9 @@ contract("EthNOS", async accounts => {
                     "signing balance was not decreased properly");
 
                 assert.equal(
-                    initialCallerBalance.cmp(newCallerBalance),
+                    initialSenderBalance.cmp(newSenderBalance),
                     0,
-                    "caller balance was decreased unexpectedly (ether should not have been spent)");
+                    "sender's balance was decreased unexpectedly (ether should not have been spent)");
             });
         });
     }
