@@ -28,14 +28,10 @@ contract("EthNOS", async accounts => {
     let ethNOSForGSNCalls;
     let ethNOSPaymasterForGSNCalls;
 
-    if (!useGSN) {
-        beforeEach(async () => {
-            ethNOS = await EthNOS.new();
-        });
-    }
-    else {
-        before(async () => {
-            ethNOS = await EthNOS.deployed();
+    before(async () => {
+        ethNOS = await EthNOS.deployed();
+
+        if (useGSN) {
             ethNOSPaymaster = await EthNOSPaymaster.deployed();
 
             providerForGSNCalls = new ethers.providers.Web3Provider(
@@ -59,8 +55,8 @@ contract("EthNOS", async accounts => {
             ethNOSPaymasterForGSNCalls = await new ethers.Contract(
                 ethNOSPaymaster.address,
                 ethNOSPaymaster.abi);
-        });
-    }
+        }
+    });
 
     function getRandomDocument() {
         return web3.utils.randomHex(32);

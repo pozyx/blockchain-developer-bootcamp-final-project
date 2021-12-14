@@ -14,7 +14,6 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
-	// - test: deployed() instead of new()?
 	// - try Solidity 0.8.10
 	// - .vscode
 	//   - Solidity version elsewhere?
