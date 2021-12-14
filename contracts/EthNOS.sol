@@ -14,7 +14,7 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable
 {
 	// TODO:
-	// - contract unit tests (+ cleanup EthNOS.test.js)
+	// - review what to do
 	// - cleanup
 	//   - TODOs (except web)
 	//   - .vscode remove from git?
@@ -472,18 +472,6 @@ contract EthNOS is BaseRelayRecipient, Ownable
 		external
 		documentValid(documentHash)
 	{
-		// TODO: unit tests
-		// - revert
-		//   - * relay different function
-		//   - * not pending
-		//   - * insufficient balance
-		//   - * sender is not required signatory
-		// - ok
-		//   - * paymaster PreRelayed emited?
-		//   - * paymaster PostRelayed emited?
-		//   - * DocumentSigningCharged emited
-		//   - * (getDocumentSigningBalance) signing balance decreased
-
 		DocumentInfo storage document = documents[documentHash];
 
 		require(document.signaturesForSignatories[_msgSender()].signTime == 0, "Already signed by sender");
