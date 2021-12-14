@@ -13,9 +13,6 @@ import "./EthNOSPaymaster.sol";
  */
 contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
-    // - dependencies
-    //   - try update packages
-    //   - try clean run
     // - scripts
     //   - test (+ _with_gsn)
     //     - use "local" network?
