@@ -1,13 +1,15 @@
 {
     "dependencies": {
-        "@opengsn/provider": "^2.2.4",
-        "@truffle/hdwallet-provider": "^1.6.0",
-        "dotenv": "^10.0.0",
-        "ethers": "^5.5.1"
+        "@opengsn/contracts": "^2.2.4",
+        "@openzeppelin/contracts": "^4.4.1",
+        "@truffle/hdwallet-provider": "^2.0.0",
+        "dotenv": "^10.0.0"
     },
     "devDependencies": {
-        "@opengsn/dev": "^2.2.4",
-        "web3": "^1.6.0"
+        "@opengsn/cli": "^2.2.4",
+        "@opengsn/provider": "^2.2.4",
+        "ethers": "^5.5.2",
+        "web3": "^1.6.1"
     },
     "scripts": {
         "test": "./scripts/launch.sh npx truffle test --network test",

@@ -14,18 +14,13 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
     // - dependencies
-    //   - web3 needed?
-    //   - ethers dev dependency?
-    //   - @openzeppelin not missing?
-    //   - opengsn ok? sol need contracts, tests need cli, (provider) - dev dependency?
-    //     - validate this is not required: node_modules/@opengsn/dev/package.json: "main": "dist/index.js" changed to "main": "dist/src/index.js"
     //   - try update packages
     //   - try clean run
     // - scripts
     //   - test (+ _with_gsn)
     //     - use "local" network?
     //     - without running ganache explicitly?
-    //   - run_local (+ _with_gsn)
+    //   - start (+ _with_gsn)
     //     - rename console?
     //     - use "local" network?
     //     - without running ganache explicitly?
