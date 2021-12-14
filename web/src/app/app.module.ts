@@ -15,25 +15,25 @@ import { DocumentDetailComponent } from './document-detail/document-detail.compo
 import { NotConnectedComponent } from './not-connected/not-connected.component';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    TopBarComponent,
-    DocumentInputComponent,
-    DocumentDetailComponent,
-    NotConnectedComponent
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    BrowserAnimationsModule,
-    NgxFileDropModule,
-    MatToolbarModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatButtonModule
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
+    declarations: [
+        AppComponent,
+        TopBarComponent,
+        DocumentInputComponent,
+        DocumentDetailComponent,
+        NotConnectedComponent
+    ],
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        BrowserAnimationsModule,
+        NgxFileDropModule,
+        MatToolbarModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        MatButtonModule
+    ],
+    providers: [],
+    bootstrap: [AppComponent]
 })
 export class AppModule { }

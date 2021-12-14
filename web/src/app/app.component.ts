@@ -3,27 +3,27 @@ import { Subscription } from 'rxjs';
 import { EthereumConnectionContextService } from './ethereum-connection-context.service';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
-  providers: [EthereumConnectionContextService]
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css'],
+    providers: [EthereumConnectionContextService]
 })
 export class AppComponent {
 
-  private ethereumConnectionContextServiceSubscription: Subscription;
+    private ethereumConnectionContextServiceSubscription: Subscription;
 
-  title = 'EthNOS';
+    title = 'EthNOS';
 
-  isEthereumConnectionReady: boolean = false;
+    isEthereumConnectionReady: boolean = false;
 
-  constructor(private ethereumConnectionContextService: EthereumConnectionContextService) {
-    this.ethereumConnectionContextServiceSubscription =
-      ethereumConnectionContextService.isEthereumConnectionReady$.subscribe(val => {
-        this.isEthereumConnectionReady = val;
-      });
-  }
+    constructor(private ethereumConnectionContextService: EthereumConnectionContextService) {
+        this.ethereumConnectionContextServiceSubscription =
+            ethereumConnectionContextService.isEthereumConnectionReady$.subscribe(val => {
+                this.isEthereumConnectionReady = val;
+            });
+    }
 
-  ngOnDestroy() {
-    this.ethereumConnectionContextServiceSubscription.unsubscribe();
-  }
+    ngOnDestroy() {
+        this.ethereumConnectionContextServiceSubscription.unsubscribe();
+    }
 }
