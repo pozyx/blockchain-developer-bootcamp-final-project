@@ -8,13 +8,19 @@
     "devDependencies": {
         "@opengsn/cli": "^2.2.4",
         "@opengsn/provider": "^2.2.4",
+        "cross-env": "^7.0.3",
         "ethers": "^5.5.2",
+        "ganache-cli": "^6.12.2",
+        "run-with-testrpc": "^0.3.1",
         "web3": "^1.6.1"
     },
     "scripts": {
-        "test": "./scripts/launch.sh npx truffle test --network test",
-        "test_with_gsn": "./scripts/launch.sh npx truffle test --network test_with_gsn",
-        "console": "./scripts/launch.sh npx truffle console --network test",
-        "console_with_gsn": "./scripts/launch.sh npx truffle console --network test_with_gsn"
+        "compile": "truffle compile",
+        "test": "npx run-with-testrpc --chainId 1337 'truffle test --network local'",
+        "test-with-gsn": "cross-env USE_LOCAL_GSN=true npx run-with-testrpc --chainId 1337 'truffle test --network local'",
+        "start": "npx run-with-testrpc --chainId 1337 'truffle migrate --network local && truffle console --network local'",
+        "start-with-gsn": "cross-env USE_LOCAL_GSN=true npx run-with-testrpc --chainId 1337 'truffle migrate --network local && truffle console --network local'",
+        "deploy-rinkeby": "truffle migrate --network rinkeby --reset",
+        "deploy-mainnet": "truffle migrate --network mainnet"
     }
 }

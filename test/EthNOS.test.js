@@ -8,8 +8,7 @@ const { advanceTimeAndBlock } = require("./advanceTimeHelpers.js");
 const { eventEmitted, eventEmittedEx } = require("./testHelpers.js");
 
 contract("EthNOS", async accounts => {
-
-    const useGSN = process.env.NETWORK == "test_with_gsn";
+    const useGSN = process.env.USE_LOCAL_GSN == "true";
 
     const emptyDocument = "0x0000000000000000000000000000000000000000000000000000000000000000";
 

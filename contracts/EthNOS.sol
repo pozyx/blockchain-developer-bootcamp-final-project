@@ -13,27 +13,6 @@ import "./EthNOSPaymaster.sol";
  */
 contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
-    // - scripts
-    //   - test (+ _with_gsn)
-    //     - use "local" network?
-    //     - without running ganache explicitly?
-    //   - start (+ _with_gsn)
-    //     - rename console?
-    //     - use "local" network?
-    //     - without running ganache explicitly?
-    //     - include migrate
-    //   - deploy (rinkeby, live?)
-    //     - env missing?
-    // - review & fix launch.sh (if still needed)
-    // - cleanup networks
-    //   - remove ropsten?
-    //   - keep only local, rinkeby, live?
-    // - delete notes if manual run is not needed
-    // - clean-up truffle-config.js
-    // - try clean run
-    //   - tests
-    //   - deploy
-
     // - UI: document detail
     //   - test console output with submitted
     //   - display
