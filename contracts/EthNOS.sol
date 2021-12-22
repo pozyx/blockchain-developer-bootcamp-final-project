@@ -14,7 +14,6 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
     // - UI: document detail
-    //   - test console output with submitted
     //   - display
     //   - show events
     //   - more prominent "go back to document-input"
@@ -49,6 +48,11 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     //   - run Ganache: net=`date "+%j%H%M%S"` && ganache-cli --networkId $net --chainId $net -v
     //   - run GSN: gsn start
     //   - run Truffle: truffle console
+    // - clean run:
+    //   - install nvm
+    //   - install node (npm)
+    //   - npm install --global yarn
+    //   - npm install --global truffle
 
     /// Certification state of document.
     enum CertificationState {
