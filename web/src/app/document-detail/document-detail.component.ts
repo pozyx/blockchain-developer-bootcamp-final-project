@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import { ethers } from 'ethers'
 import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
 
-import EthNOSabi from '../EthNOS-abi.json'; // TODO: keep up to date
+import EthNOS from '../EthNOS.json';
 
 // TODO: extract?
 enum CertificationState {
@@ -28,15 +28,25 @@ class SigningInfo {
     }
 }
 
+// TODO: extract?
+function isKeyof<T extends object>(
+    obj: T,
+    possibleKey: keyof any)
+    : possibleKey is keyof T {
+    return possibleKey in obj;
+}
+
+// TODO: extract?
+interface INetwork {
+    address: string;
+}
+
 @Component({
     selector: 'app-document-detail',
     templateUrl: './document-detail.component.html',
     styleUrls: ['./document-detail.component.css']
 })
 export class DocumentDetailComponent implements OnInit {
-
-    // TODO: keep up to date
-    private readonly ethNOScontractAddress: string = '0x4bf350Af9F7613002879601c76898feae9C2d7Ee';
 
     private ethereumConnectionContextServiceSubscription: Subscription;
 
@@ -65,13 +75,22 @@ export class DocumentDetailComponent implements OnInit {
     // TODO: error handling
     // TODO: busy indicator? check on testnet if it is slow
     async loadDocument() {
-
         this.documentHash = this.route.snapshot.params['documentHash'];
         console.log('documentHash', this.documentHash); // TODO: display
 
+        const chainId =
+            (await this.ethereumConnectionContextService.web3Provider!.getNetwork()).chainId;
+
+        if (!isKeyof(EthNOS.networks, chainId))
+            throw new Error(`Unsupported Chain ID (${chainId})`);
+
+        const contractAddress = (EthNOS.networks[chainId] as INetwork).address;
+
+        console.log('contractAddress', contractAddress); // TODO: remove
+
         const ethNOS = new ethers.Contract(
-            this.ethNOScontractAddress,
-            EthNOSabi, // TODO: EthNOS.abi - or like this?
+            contractAddress,
+            EthNOS.abi,
             this.ethereumConnectionContextService.web3Signer!);
 
         const verifyDocumentResult = await ethNOS.verifyDocument(this.documentHash);

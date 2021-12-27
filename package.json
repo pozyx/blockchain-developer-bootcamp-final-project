@@ -16,11 +16,11 @@
     },
     "scripts": {
         "compile": "truffle compile",
-        "test": "npx run-with-testrpc --chainId 1337 'truffle test --network local'",
-        "test-with-gsn": "cross-env USE_LOCAL_GSN=true npx run-with-testrpc --chainId 1337 'truffle test --network local'",
-        "start": "cross-env FUND_WALLET=true npx run-with-testrpc --chainId 1337 'truffle migrate --network local && truffle console --network local'",
-        "start-with-gsn": "cross-env USE_LOCAL_GSN=true FUND_WALLET=true npx run-with-testrpc --chainId 1337 'truffle migrate --network local && truffle console --network local'",
-        "deploy-rinkeby": "truffle migrate --network rinkeby --reset",
-        "deploy-mainnet": "truffle migrate --network mainnet"
+        "test": "npx run-with-testrpc --chainId 1337 --networkId 1337 'truffle test --network local'",
+        "test-with-gsn": "cross-env USE_LOCAL_GSN=true npx run-with-testrpc --chainId 1337 --networkId 1337 'truffle test --network local'",
+        "start": "cross-env FUND_WALLET=true npx run-with-testrpc --chainId 1337 --networkId 1337 'truffle migrate --network local && cp build/contracts/EthNOS.json web/src/app/EthNOS.json && truffle console --network local'",
+        "start-with-gsn": "cross-env USE_LOCAL_GSN=true FUND_WALLET=true npx run-with-testrpc --chainId 1337 --networkId 1337 'truffle migrate --network local && cp build/contracts/EthNOS.json web/src/app/EthNOS.json && truffle console --network local'",
+        "deploy-rinkeby": "truffle migrate --network rinkeby --reset && cp build/contracts/EthNOS.json web/src/app/EthNOS.json",
+        "deploy-mainnet": "truffle migrate --network mainnet && cp build/contracts/EthNOS.json web/src/app/EthNOS.json"
     }
 }

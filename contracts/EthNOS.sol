@@ -13,12 +13,6 @@ import "./EthNOSPaymaster.sol";
  */
 contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
-    // - Avoid contract address hardcoding and ABI copying:
-    //   - make stable networkId / chainId in build/contracts/EthNOS
-    //     - test local and Rinkeby
-    //   - copy EthNOS.json to web on deploy
-    //   - UI: load ABI from EthNOS.json
-    //   - UI: load contract address from EthNOS.json
     // - UI: document input
     //   - center screen
     // - UI: document detail

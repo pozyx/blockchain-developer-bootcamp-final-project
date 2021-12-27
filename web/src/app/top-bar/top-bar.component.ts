@@ -104,7 +104,7 @@ export class TopBarComponent implements OnInit {
             const network = await this.web3Provider!.getNetwork();
             this.isEthereumProviderConnectedToCompatibleNetwork =
                 network.chainId == 4 ||  // Rinkeby
-                network.chainId > 1000;  // local
+                network.chainId == 1337;  // local
         }
         catch (err) {
             this.isEthereumProviderConnected = false;
