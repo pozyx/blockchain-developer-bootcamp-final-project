@@ -13,8 +13,6 @@ import "./EthNOSPaymaster.sol";
  */
 contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
-    // - UI: document input
-    //   - center screen
     // - UI: document detail
     //   - more prominent "go back to document-input"
     //   - display
