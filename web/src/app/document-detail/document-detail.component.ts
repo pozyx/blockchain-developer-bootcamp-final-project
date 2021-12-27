@@ -5,7 +5,6 @@ import { ethers } from 'ethers'
 import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
 
 import EthNOSabi from '../EthNOS-abi.json'; // TODO: keep up to date
-// import EthNOS from '../../../../build/contracts/EthNOS.json'; // TODO: or like this?
 
 // TODO: extract?
 enum CertificationState {
@@ -37,7 +36,7 @@ class SigningInfo {
 export class DocumentDetailComponent implements OnInit {
 
     // TODO: keep up to date
-    private readonly ethNOScontractAddress: string = '0xB225e7bDC888d4dD407Ff9487b0d5d2ccc98823c';
+    private readonly ethNOScontractAddress: string = '0x4bf350Af9F7613002879601c76898feae9C2d7Ee';
 
     private ethereumConnectionContextServiceSubscription: Subscription;
 
@@ -63,7 +62,6 @@ export class DocumentDetailComponent implements OnInit {
             this.loadDocument();
     }
 
-    // TODO: test with submitted document
     // TODO: error handling
     // TODO: busy indicator? check on testnet if it is slow
     async loadDocument() {

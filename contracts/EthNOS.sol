@@ -13,10 +13,18 @@ import "./EthNOSPaymaster.sol";
  */
 contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
+    // - Avoid contract address hardcoding and ABI copying:
+    //   - make stable networkId / chainId in build/contracts/EthNOS
+    //     - test local and Rinkeby
+    //   - copy EthNOS.json to web on deploy
+    //   - UI: load ABI from EthNOS.json
+    //   - UI: load contract address from EthNOS.json
+    // - UI: document input
+    //   - center screen
     // - UI: document detail
+    //   - more prominent "go back to document-input"
     //   - display
     //   - show events
-    //   - more prominent "go back to document-input"
     //   - TODOs in document-detail
     // - UI: simple submit, sign
     // - UI: fund / withdraw, etherless sign (see OpenGSN/SimpleUse, OpenGSN React app)
@@ -24,12 +32,12 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     // - (UI: resolve ENS addresses)
     // - (UI: fund on submit, amend/delete, show history, show orphaned signatories)
     // - (UI: cleanup TODOs)
-    // - (UI: ABI copying ok? contract address hardcoding ok?)
     // - (calculate and set post gas usage)
     // - (can required amount for etherless signing be calculated?)
     // - try clean run
     //    - tests
     //    - web
+    //    - (also Windows)
     // - deploy
     //   - smart contracts (Rinkeby)
     //   - (verify and publish source code on etherscan)
@@ -53,6 +61,8 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     //   - install node (npm)
     //   - npm install --global yarn
     //   - npm install --global truffle
+    // - manual wallet funding:
+    //   - web3.eth.sendTransaction({ from: accounts[0], to: "0xBa36436982A4EEBDC5e322E4a492DE7fE064b918", value: web3.utils.toWei("1") })
 
     /// Certification state of document.
     enum CertificationState {

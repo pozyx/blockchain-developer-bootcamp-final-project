@@ -1,3 +1,4 @@
+const ethers = require("ethers");
 const { GsnTestEnvironment } = require("@opengsn/cli/dist/GsnTestEnvironment");
 const EthNOS = artifacts.require("./EthNOS.sol");
 const EthNOSPaymaster = artifacts.require("./EthNOSPaymaster.sol");
@@ -55,5 +56,24 @@ module.exports = async function (deployer, network, accounts) {
     }
     else {
         console.log(`Deployed EthNOS at ${ethNOS.address}`);
+    }
+
+    // Funding wallet for convenience (for local manual testing of client)
+    if (network == "local" &&
+        process.env.FUND_WALLET == "true") {
+
+        if (process.env.MNEMONIC) {
+            const addressToFund = ethers.Wallet.fromMnemonic(process.env.MNEMONIC).address;
+
+            web3.eth.sendTransaction({
+                from: accounts[0],
+                to: addressToFund,
+                value: web3.utils.toWei("1") });
+
+            console.log(`Wallet (account ${addressToFund}) funded with 1 ETH.`);
+        }
+        else {
+            console.log("Mnemonic not found in .env - not funding.");
+        }
     }
 };
