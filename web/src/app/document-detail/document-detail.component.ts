@@ -44,7 +44,7 @@ interface INetwork {
 @Component({
     selector: 'app-document-detail',
     templateUrl: './document-detail.component.html',
-    styleUrls: ['./document-detail.component.css']
+    styleUrls: ['./document-detail.component.scss']
 })
 export class DocumentDetailComponent implements OnInit {
 

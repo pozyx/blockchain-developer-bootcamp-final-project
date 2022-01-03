@@ -6,7 +6,7 @@ import { ethers } from 'ethers'
 @Component({
     selector: 'app-document-input',
     templateUrl: './document-input.component.html',
-    styleUrls: ['./document-input.component.css']
+    styleUrls: ['./document-input.component.scss']
 })
 export class DocumentInputComponent {
 

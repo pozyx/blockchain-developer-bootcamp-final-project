@@ -5,7 +5,7 @@ import { EthereumConnectionContextService } from './ethereum-connection-context.
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
-    styleUrls: ['./app.component.css'],
+    styleUrls: ['./app.component.scss'],
     providers: [EthereumConnectionContextService]
 })
 export class AppComponent {

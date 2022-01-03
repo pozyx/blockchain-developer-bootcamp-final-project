@@ -26,6 +26,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     // - UI: fund/withdraw for etherless sign
     // - UI: etherless sign
     //   - (see OpenGSN/SimpleUse, OpenGSN React app)
+    // - (UI: review theme)
     // - (UI: review all captions/descriptions)
     // - (UI: resolve ENS addresses)
     // - (UI: fund on submit, amend/delete, show history, show orphaned signatories)
