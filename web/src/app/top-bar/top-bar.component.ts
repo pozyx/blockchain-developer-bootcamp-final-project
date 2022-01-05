@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { ethers } from 'ethers';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
@@ -20,6 +20,8 @@ export class TopBarComponent implements OnInit {
     private web3Signer: ethers.providers.JsonRpcSigner | null = null;
 
     private _isEthereumProviderConnectedToCompatibleNetwork: boolean = false;
+
+    @Input() isInDocumentDetail: boolean = false;
 
     isInitializingEthereumProvider: boolean = true;
     isEthereumProviderPresent: boolean = false;

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { DocumentDetailComponent } from './document-detail/document-detail.component';
 import { EthereumConnectionContextService } from './ethereum-connection-context.service';
 
 @Component({
@@ -14,6 +15,8 @@ export class AppComponent {
 
     title = 'EthNOS';
 
+    isInDocumentDetail: boolean = false;
+
     isEthereumConnectionReady: boolean = false;
 
     constructor(private ethereumConnectionContextService: EthereumConnectionContextService) {
@@ -25,5 +28,9 @@ export class AppComponent {
 
     ngOnDestroy() {
         this.ethereumConnectionContextServiceSubscription.unsubscribe();
+    }
+
+    onActivate(event: Event) {
+        this.isInDocumentDetail = event instanceof DocumentDetailComponent;
     }
 }

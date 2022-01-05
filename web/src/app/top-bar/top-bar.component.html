@@ -1,39 +1,42 @@
-<mat-toolbar color="primary">
-    <mat-toolbar-row class="mat-toolbar-row1">
-        <a [routerLink]="['/']" class="header">
-            <span class="mat-headline">EthNOS</span>
-        </a>
-        <span class="spacer"></span>
-        <button *ngIf="isEthereumProviderPresent && !isEthereumProviderConnected && !isEthereumProviderActionNeeded"
-            mat-flat-button color="accent" (click)="connect()">
-            <img class="connect" src="/assets/eth-diamond-black.png">
-            Connect
-        </button>
-    </mat-toolbar-row>
-    <mat-toolbar-row class="mat-toolbar-row2">
-        <span class="mat-subheading-1">Ethereum Notary Service</span>
-        <span class="spacer"></span>
-        <span *ngIf="isInitializingEthereumProvider" class="mat-subheading-1">
-            Initializing Ethereum wallet...
-        </span>
-        <span *ngIf="!isInitializingEthereumProvider && !isEthereumProviderPresent" class="mat-subheading-1">
-            Ethereum wallet not installed. Try <a href="https://metamask.io/download.html">MetaMask</a>...
-        </span>
-        <span *ngIf="isEthereumProviderPresent && !isEthereumProviderConnected && !isEthereumProviderActionNeeded"
-            class="mat-subheading-1">
-            Connect your Ethereum wallet to Rinkeby (or local) testnet
-        </span>
-        <span *ngIf="isEthereumProviderActionNeeded" class="mat-subheading-1">
-            Check your Ethereum wallet
-        </span>
-        <span *ngIf="isEthereumProviderConnected && !isEthereumProviderConnectedToCompatibleNetwork"
-            class="mat-subheading-1">
-            Switch your Ethereum wallet to Rinkeby (or local) testnet
-        </span>
-        <span *ngIf="isEthereumProviderConnected && isEthereumProviderConnectedToCompatibleNetwork"
-            class="mat-subheading-1">
-            <mat-icon class="logged-in material-icons">perm_identity</mat-icon>
-            {{selectedAddress}}
-        </span>
-    </mat-toolbar-row>
-</mat-toolbar>
+<div class="root"
+    [ngClass]="{'inDocumentDetail': isInDocumentDetail}">
+    <mat-toolbar color="primary" class="mat-elevation-z6">
+        <mat-toolbar-row class="mat-toolbar-row1">
+            <a [routerLink]="['/']" class="header">
+                <span class="mat-headline">EthNOS</span>
+            </a>
+            <span class="spacer"></span>
+            <button *ngIf="isEthereumProviderPresent && !isEthereumProviderConnected && !isEthereumProviderActionNeeded"
+                mat-flat-button color="accent" (click)="connect()">
+                <img class="connect" src="/assets/eth-diamond-black.png">
+                Connect
+            </button>
+        </mat-toolbar-row>
+        <mat-toolbar-row class="mat-toolbar-row2">
+            <span class="mat-subheading-1">Ethereum Notary Service</span>
+            <span class="spacer"></span>
+            <span *ngIf="isInitializingEthereumProvider" class="mat-subheading-1">
+                Initializing Ethereum wallet...
+            </span>
+            <span *ngIf="!isInitializingEthereumProvider && !isEthereumProviderPresent" class="mat-subheading-1">
+                Ethereum wallet not installed. Try <a href="https://metamask.io/download.html">MetaMask</a>...
+            </span>
+            <span *ngIf="isEthereumProviderPresent && !isEthereumProviderConnected && !isEthereumProviderActionNeeded"
+                class="mat-subheading-1">
+                Connect your Ethereum wallet to Rinkeby (or local) testnet
+            </span>
+            <span *ngIf="isEthereumProviderActionNeeded" class="mat-subheading-1">
+                Check your Ethereum wallet
+            </span>
+            <span *ngIf="isEthereumProviderConnected && !isEthereumProviderConnectedToCompatibleNetwork"
+                class="mat-subheading-1">
+                Switch your Ethereum wallet to Rinkeby (or local) testnet
+            </span>
+            <span *ngIf="isEthereumProviderConnected && isEthereumProviderConnectedToCompatibleNetwork"
+                class="mat-subheading-1">
+                <mat-icon class="logged-in material-icons">perm_identity</mat-icon>
+                {{selectedAddress}}
+            </span>
+        </mat-toolbar-row>
+    </mat-toolbar>
+</div>
