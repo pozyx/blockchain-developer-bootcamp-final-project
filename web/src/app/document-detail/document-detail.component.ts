@@ -62,6 +62,8 @@ export class DocumentDetailComponent implements OnInit {
     certificationTime: Date | null = null;
     signatories: SigningInfo[] = [];
 
+    isBusy: boolean = true;
+
     constructor(
         private route: ActivatedRoute,
         private ethereumConnectionContextService: EthereumConnectionContextService,
@@ -82,6 +84,8 @@ export class DocumentDetailComponent implements OnInit {
 
     async loadDocument() {
         try {
+            this.isBusy = true;
+
             this.documentHash = this.route.snapshot.params['documentHash'];
             this.shortenedDocumentHash = this.documentHash!.substring(0, 10)
                 + '.....' + this.documentHash!.substring(this.documentHash!.length - 10);
@@ -103,7 +107,6 @@ export class DocumentDetailComponent implements OnInit {
 
             //--
 
-            // TODO: busy indicator? check on testnet if it is slow
             const verifyDocumentResult = await ethNOS.verifyDocument(this.documentHash);
             console.log(verifyDocumentResult); // TODO: remove
 
@@ -154,6 +157,8 @@ export class DocumentDetailComponent implements OnInit {
                     ));
             }
             console.log('signatories', this.signatories); // TODO: display
+
+            this.isBusy = false;
         }
         catch (err) {
             console.log("Error querying document", err);

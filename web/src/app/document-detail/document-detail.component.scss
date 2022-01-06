@@ -1,4 +1,11 @@
+.root {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+}
+
 .header {
+    flex: 0 1 auto;
     background: var(--color-primary);
     padding: 0px 0px 10px 16px;
     display: flex;
@@ -30,4 +37,15 @@ button.close {
 
 mat-icon.close {
     margin-top: -2px;
+}
+
+.spinnerContainer {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.content {
+    flex: 1 1 auto;
 }

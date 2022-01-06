@@ -1,13 +1,21 @@
-<div class="header">
-    Document:
-    <a class="mat-subheading-1 documentHash" href="javascript: void(0);" (click)="copyDocumentHashToClipboard()"
-        matTooltip="Click to copy document hash to clipboard">
-        <mat-icon class="material-icons">description</mat-icon>
-        {{shortenedDocumentHash}}
-    </a>
-    <span class="spacer"></span>
-    <button mat-flat-button color="accent" class="close" [routerLink]="['/']" matTooltip="Close document">
-        <mat-icon class="material-icons close">close</mat-icon>
-        Close
-    </button>
+<div class="root">
+    <div class="header">
+        Document:
+        <a class="mat-subheading-1 documentHash" href="javascript: void(0);" (click)="copyDocumentHashToClipboard()"
+            matTooltip="Click to copy document hash to clipboard">
+            <mat-icon class="material-icons">description</mat-icon>
+            {{shortenedDocumentHash}}
+        </a>
+        <span class="spacer"></span>
+        <button mat-flat-button color="accent" class="close" [routerLink]="['/']" matTooltip="Close document">
+            <mat-icon class="material-icons close">close</mat-icon>
+            Close
+        </button>
+    </div>
+    <div class="spinnerContainer" *ngIf="isBusy">
+        <mat-spinner [diameter]="50"></mat-spinner>
+    </div>
+    <div class="content" *ngIf="!isBusy">
+        content
+    </div>
 </div>
