@@ -1,5 +1,5 @@
 <div class="root"
-    [ngClass]="{'inDocumentDetail': isInDocumentDetail}">
+    [ngClass]="{'inDocumentDetail': isInDocumentDetail && isEthereumProviderConnectedToCompatibleNetwork}">
     <mat-toolbar color="primary" class="mat-elevation-z6">
         <mat-toolbar-row class="mat-toolbar-row1">
             <a [routerLink]="['/']" class="header">

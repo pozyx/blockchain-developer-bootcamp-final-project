@@ -1,4 +1,5 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Router, Event, NavigationEnd } from '@angular/router';
 import { ethers } from 'ethers';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
@@ -23,8 +24,7 @@ export class TopBarComponent implements OnInit {
 
     private selectedAddress: string | null = null;
 
-    @Input() isInDocumentDetail: boolean = false;
-
+    isInDocumentDetail: boolean = false;
     isInitializingEthereumProvider: boolean = true;
     isEthereumProviderPresent: boolean = false;
     isEthereumProviderConnected: boolean = false;
@@ -43,7 +43,15 @@ export class TopBarComponent implements OnInit {
             val ? this.web3Signer : null);
     }
 
-    constructor(private ethereumConnectionContextService: EthereumConnectionContextService) { }
+    constructor(
+        private ethereumConnectionContextService: EthereumConnectionContextService,
+        private router: Router) {
+        this.router.events.subscribe((event: Event) => {
+            if (event instanceof NavigationEnd) {
+                this.isInDocumentDetail = event.url.includes('document');
+            }
+        });
+    }
 
     async ngOnInit() {
 
@@ -103,7 +111,7 @@ export class TopBarComponent implements OnInit {
             this.selectedAddress = await this.web3Signer!.getAddress();
 
             this.shortenedSelectedAddress = this.selectedAddress!.substring(0, 10)
-            + '.....' + this.selectedAddress!.substring(this.selectedAddress!.length - 10);
+                + '.....' + this.selectedAddress!.substring(this.selectedAddress!.length - 10);
 
             this.isEthereumProviderConnected = true;
             this.isEthereumProviderActionNeeded = false;

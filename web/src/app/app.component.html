@@ -1,7 +1,7 @@
 <div class="app-frame mat-app-background">
-    <app-top-bar [isInDocumentDetail]="isInDocumentDetail">
+    <app-top-bar>
     </app-top-bar>
-    <router-outlet *ngIf="isEthereumConnectionReady" (activate)="onActivate($event)">
+    <router-outlet *ngIf="isEthereumConnectionReady">
     </router-outlet>
     <app-not-connected *ngIf="!isEthereumConnectionReady">
     </app-not-connected>
