@@ -13,47 +13,81 @@
         <mat-spinner [diameter]="50"></mat-spinner>
     </div>
     <div class="content" *ngIf="!isBusy">
-        <div class="mat-subheading-1">
-            <span *ngIf="certificationState === CertificationState.NotSubmitted">
-                <mat-icon class="material-icons">unpublished</mat-icon>
-                Document not submitted
-            </span>
-            <span *ngIf="certificationState === CertificationState.CertificationPending">
-                <mat-icon class="material-icons">published_with_changes</mat-icon>
-                Document is pending certification
-            </span>
-            <span *ngIf="certificationState === CertificationState.Certified">
-                <mat-icon class="material-icons verified">verified</mat-icon>
-                Document is certified
-                <span class="faded sideNote" *ngIf="signatories.length > 0">
-                    (signed by all required signatories)</span>
-                <span class="faded sideNote" *ngIf="signatories.length == 0">
-                    (no signatories were required - proof of existence only)</span>
-            </span>
-        </div>
-        <div class="mat-subheading-1 infoRow"
-            *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
-            <span class="faded">Submitted by:</span>
-            <app-address-or-hash [mode]="AddressOrHash.Address" [addressOrHash]="submitter!">
-            </app-address-or-hash>
-        </div>
-        <div class="mat-subheading-1 infoRow"
-            *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
-            <span class="faded">Submitted on:</span>
-            <mat-icon class="material-icons">schedule</mat-icon>
-            {{submissionTime | date:'medium'}}
-        </div>
-        <div class="mat-subheading-1 infoRow" *ngIf="certificationState === CertificationState.Certified">
-            <span class="faded">Certified on:</span>
-            <mat-icon class="material-icons">schedule</mat-icon>
-            {{certificationTime | date:'medium'}}
-        </div>
-        <div class="mat-subheading-1 infoRow faded"
-            *ngIf="supportsEtherlessSigning && (certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified)">
-            <span>Signing balance:</span>
-            <mat-icon class="material-icons">savings</mat-icon>
-            {{formattedSigningBalance}}
-            ETH
-        </div>
+        <mat-card>
+            <mat-card-header>
+                <div mat-card-avatar class="statusIcon">
+                    <mat-icon *ngIf="certificationState === CertificationState.NotSubmitted"
+                        class="material-icons statusIcon">unpublished</mat-icon>
+                    <mat-icon *ngIf="certificationState === CertificationState.CertificationPending"
+                        class="material-icons statusIcon">published_with_changes</mat-icon>
+                    <mat-icon *ngIf="certificationState === CertificationState.Certified"
+                        class="material-icons statusIcon verified">verified</mat-icon>
+                </div>
+                <mat-card-title>
+                    <span *ngIf="certificationState === CertificationState.NotSubmitted">
+                        Document not submitted yet
+                    </span>
+                    <span *ngIf="certificationState === CertificationState.CertificationPending">
+                        Document is pending certification
+                    </span>
+                    <span *ngIf="certificationState === CertificationState.Certified">
+                        Document is certified
+                    </span>
+                </mat-card-title>
+                <mat-card-subtitle>
+                    <span *ngIf="certificationState === CertificationState.NotSubmitted">
+                        Submit document for certification
+                    </span>
+                    <span *ngIf="certificationState === CertificationState.CertificationPending">
+                        Some signatories did not sign the document yet
+                    </span>
+                    <span *ngIf="certificationState === CertificationState.Certified">
+                        <span *ngIf="signatories.length > 0">
+                            Document was signed by all required signatories
+                        </span>
+                        <span *ngIf="signatories.length == 0">
+                            No signatories were required - certification is proof of existence only
+                        </span>
+                    </span>
+                </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content
+                [ngClass]="{'nonEmpty': certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified}">
+                <div
+                    *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
+                    <span class="faded">Submitted by:</span>
+                </div>
+                <div
+                    *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
+                    <app-address-or-hash [mode]="AddressOrHash.Address" [addressOrHash]="submitter!">
+                    </app-address-or-hash>
+                </div>
+                <div
+                    *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
+                    <span class="faded">Submitted on:</span>
+                </div>
+                <div
+                    *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
+                    <mat-icon class="material-icons clock">schedule</mat-icon>
+                    {{submissionTime | date:'medium'}}
+                </div>
+                <div *ngIf="certificationState === CertificationState.Certified">
+                    <span class="faded">Certified on:</span>
+                </div>
+                <div *ngIf="certificationState === CertificationState.Certified">
+                    <mat-icon class="material-icons clock">schedule</mat-icon>
+                    {{certificationTime | date:'medium'}}
+                </div>
+                <div class="faded"
+                    *ngIf="supportsEtherlessSigning && (certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified)">
+                    <span>Signing balance:</span>
+                </div>
+                <div class="faded"
+                    *ngIf="supportsEtherlessSigning && (certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified)">
+                    {{formattedSigningBalance}}
+                    ETH
+                </div>
+            </mat-card-content>
+        </mat-card>
     </div>
 </div>

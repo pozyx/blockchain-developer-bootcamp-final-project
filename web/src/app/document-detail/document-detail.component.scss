@@ -10,6 +10,7 @@
     padding: 0px 0px 10px 16px;
     display: flex;
     align-items: center;
+    margin: 0px
 }
 
 mat-icon {
@@ -33,6 +34,10 @@ mat-icon.close {
     margin-top: -2px;
 }
 
+mat-icon.clock {
+    margin-top: -2px;
+}
+
 .spinnerContainer {
     flex: 1 1 auto;
     display: flex;
@@ -42,11 +47,23 @@ mat-icon.close {
 
 .content {
     flex: 1 1 auto;
-    padding: 10px 6px 6px 10px
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.infoRow {
-    margin-left: 27px;
+mat-card {
+    padding: 25px 35px 25px 35px;
+}
+
+mat-card-content {
+    display: grid;
+    grid-gap: 5px;
+    grid-template-columns: auto auto;
+}
+
+.nonEmpty {
+    margin-top: 15px;
 }
 
 .faded {
@@ -54,9 +71,19 @@ mat-icon.close {
 }
 
 .verified {
-    color: lightgreen;
+    color: rgb(77, 228, 77);
 }
 
-.sideNote {
-    margin-left: 5px;
+mat-card {
+    max-width: 400px;
+}
+
+div.statusIcon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+mat-icon.statusIcon {
+    transform: scale(2);
 }

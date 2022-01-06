@@ -67,10 +67,20 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     // - manual submit
     //   - yarn start
     //   - ethNOS = await EthNOS.deployed();
-    //   - ethNOS.submitDocument('0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457',[accounts[1]]);
-    //   - http://localhost:4200/document/0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457
-    //   - ethNOS.submitDocument('0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9']);
-    //   - http://localhost:4200/document/0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9
+    //   - not submitted:
+    //     http://localhost:4200/document/0x7770cebd8da24269f3972c7d2cc4602d24695a4cfda1a5592e2495bbce1ba0fc
+    //   - pending:
+    //     http://localhost:4200/document/0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457
+    //     ethNOS.submitDocument('0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457',[accounts[1], accounts[2], accounts[3], accounts[4]]);
+    //     ethNOS.signDocument('0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457', { from: accounts[1] });
+    //     ethNOS.signDocument('0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457', { from: accounts[2] });
+    //   - certified
+    //     http://localhost:4200/document/0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9
+    //     ethNOS.submitDocument('0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9',[accounts[1], accounts[2], accounts[3], accounts[4]]);
+    //     ethNOS.signDocument('0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9', { from: accounts[1] });
+    //     ethNOS.signDocument('0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9', { from: accounts[2] });
+    //     ethNOS.signDocument('0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9', { from: accounts[3] });
+    //     ethNOS.signDocument('0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9', { from: accounts[4] });
 
     /// Certification state of document.
     enum CertificationState {

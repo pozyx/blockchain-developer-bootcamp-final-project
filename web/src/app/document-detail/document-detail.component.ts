@@ -129,8 +129,6 @@ export class DocumentDetailComponent implements OnInit {
             this.certificationTime = this.parseTimeStamp(verifyDocumentResult.currentCertification.certificationTime);
             // console.log('certificationTime', this.certificationTime);
 
-            //--
-
             this.signatories = [];
 
             for (let signatory of verifyDocumentResult.currentCertification.requiredSignatories) {
@@ -139,11 +137,7 @@ export class DocumentDetailComponent implements OnInit {
 
                 for (let signature of verifyDocumentResult.signatures) {
                     if (signature.signatory == signatory) {
-                        // TODO: extract time conversion?
-                        signTime =
-                            signature.signTime != 0
-                                ? new Date(signature.signTime * 1000)
-                                : null;
+                        signTime = this.parseTimeStamp(signature.signTime);
                         break;
                     }
                 }
@@ -155,8 +149,6 @@ export class DocumentDetailComponent implements OnInit {
                     ));
             }
             console.log('signatories', this.signatories); // TODO: display
-
-            //--
 
             if (this.supportsEtherlessSigning)
             {
