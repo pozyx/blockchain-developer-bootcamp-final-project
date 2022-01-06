@@ -21,10 +21,6 @@ $accent: map-get($app-theme, accent);
   --color-success: #{mat-color($app-success)};
 }
 
-html, body {
-    height: 100%;
-}
-
 body {
     margin: 0;
     font-family: Roboto, "Helvetica Neue", sans-serif;
@@ -33,11 +29,13 @@ body {
 /* workaround: only works in global styles */
 router-outlet + * {
     flex: 1 1 auto;
+    display: flex;
+    flex-flow: column;
 }
 
 /* workaround - ngx-file-drop allows only global styles */
 .document-input_drop-area {
-    height: 100%;
+    flex: 1 1 auto;
     display: flex;
     justify-content: center;
     align-items: center;
