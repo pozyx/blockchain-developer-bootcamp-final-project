@@ -1,3 +1,14 @@
 .app-frame {
+    display: flex;
+    flex-flow: column;
     height: 100%;
+}
+
+app-top-bar {
+    flex: 0 1 auto;
+}
+
+// also same set for "router-outlet + *" in global styles
+app-not-connected {
+    flex: 1 1 auto;
 }

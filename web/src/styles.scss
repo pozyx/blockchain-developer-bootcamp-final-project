@@ -21,30 +21,35 @@ $accent: map-get($app-theme, accent);
   --color-success: #{mat-color($app-success)};
 }
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+/* workaround: only works in global styles */
+router-outlet + * {
+    flex: 1 1 auto;
+}
 
 /* workaround - ngx-file-drop allows only global styles */
 .document-input_drop-area {
-    position: absolute;
-    top: 0px;
-    bottom: 0px;
-    left: 0px;
-    right: 0px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0px 16px 16px 16px;
 }
 
-/* workaround - ngx-file-drop allows only global styles */
-.document-input_sub-drop-area {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
+/* SnackBar is outside of component in DOM */
 .snackBar .mat-simple-snackbar {
     justify-content: center;
 }
 
+/* SnackBar is outside of component in DOM */
 .snackBarError {
     border-style: solid;
     border-color: var(--color-warn);
