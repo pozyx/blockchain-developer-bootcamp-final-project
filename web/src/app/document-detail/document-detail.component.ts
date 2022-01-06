@@ -126,14 +126,10 @@ export class DocumentDetailComponent implements OnInit {
             this.submissionTime = this.parseTimeStamp(verifyDocumentResult.currentCertification.submissionTime);
             // console.log('submissionTime', this.submissionTime);
 
-            //--
+            this.certificationTime = this.parseTimeStamp(verifyDocumentResult.currentCertification.certificationTime);
+            // console.log('certificationTime', this.certificationTime);
 
-            // TODO: extract time conversion?
-            this.certificationTime =
-                verifyDocumentResult.currentCertification.certificationTime != 0
-                    ? new Date(verifyDocumentResult.currentCertification.certificationTime * 1000)
-                    : null;
-            console.log('certificationTime', this.certificationTime); // TODO: display
+            //--
 
             this.signatories = [];
 

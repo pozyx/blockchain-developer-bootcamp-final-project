@@ -26,6 +26,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     // - UI: fund/withdraw for etherless sign
     // - UI: etherless sign
     //   - (see OpenGSN/SimpleUse, OpenGSN React app)
+    // - UI: web - link to github
     // - (UI: review theme)
     // - (UI: review all captions/descriptions)
     // - (UI: resolve ENS addresses)
@@ -68,6 +69,8 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     //   - ethNOS = await EthNOS.deployed();
     //   - ethNOS.submitDocument('0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457',[accounts[1]]);
     //   - http://localhost:4200/document/0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457
+    //   - ethNOS.submitDocument('0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9']);
+    //   - http://localhost:4200/document/0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9
 
     /// Certification state of document.
     enum CertificationState {

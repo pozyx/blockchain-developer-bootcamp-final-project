@@ -1,9 +1,7 @@
 <div class="root">
     <div class="header mat-subheading-1">
         Document hash:
-        <app-address-or-hash class="document"
-            [mode]="AddressOrHash.Hash"
-            [addressOrHash]="documentHash!">
+        <app-address-or-hash class="document" [mode]="AddressOrHash.Hash" [addressOrHash]="documentHash!">
         </app-address-or-hash>
         <span class="spacer"></span>
         <button mat-flat-button color="accent" class="close" [routerLink]="['/']" matTooltip="Close document">
@@ -24,21 +22,35 @@
                 <mat-icon class="material-icons">published_with_changes</mat-icon>
                 Document is pending certification
             </span>
+            <span *ngIf="certificationState === CertificationState.Certified">
+                <mat-icon class="material-icons verified">verified</mat-icon>
+                Document is certified
+                <span class="faded sideNote" *ngIf="signatories.length > 0">
+                    (signed by all required signatories)</span>
+                <span class="faded sideNote" *ngIf="signatories.length == 0">
+                    (no signatories were required - proof of existence only)</span>
+            </span>
         </div>
-        <div class="mat-subheading-1 infoRow" *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
-            Submitted by:
-            <app-address-or-hash
-                [mode]="AddressOrHash.Address"
-                [addressOrHash]="submitter!">
+        <div class="mat-subheading-1 infoRow"
+            *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
+            <span class="faded">Submitted by:</span>
+            <app-address-or-hash [mode]="AddressOrHash.Address" [addressOrHash]="submitter!">
             </app-address-or-hash>
         </div>
-        <div class="mat-subheading-1 infoRow" *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
-            Submitted on:
+        <div class="mat-subheading-1 infoRow"
+            *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
+            <span class="faded">Submitted on:</span>
             <mat-icon class="material-icons">schedule</mat-icon>
             {{submissionTime | date:'medium'}}
         </div>
-        <div class="mat-subheading-1 infoRow notImportant" *ngIf="supportsEtherlessSigning && (certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified)">
-            Signing balance:
+        <div class="mat-subheading-1 infoRow" *ngIf="certificationState === CertificationState.Certified">
+            <span class="faded">Certified on:</span>
+            <mat-icon class="material-icons">schedule</mat-icon>
+            {{certificationTime | date:'medium'}}
+        </div>
+        <div class="mat-subheading-1 infoRow faded"
+            *ngIf="supportsEtherlessSigning && (certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified)">
+            <span>Signing balance:</span>
             <mat-icon class="material-icons">savings</mat-icon>
             {{formattedSigningBalance}}
             ETH
