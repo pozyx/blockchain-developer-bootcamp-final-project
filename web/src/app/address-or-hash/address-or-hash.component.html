@@ -1,0 +1,6 @@
+<a class="mat-subheading-1" href="javascript: void(0);" (click)="copyToClipboard()"
+    matTooltip="Click to copy to clipboard">
+    <mat-icon class="material-icons" *ngIf="mode === AddressOrHash.Hash">description</mat-icon>
+    <mat-icon class="material-icons" *ngIf="mode === AddressOrHash.Address">perm_identity</mat-icon>
+    {{shortenedAddressOrHash}}
+</a>

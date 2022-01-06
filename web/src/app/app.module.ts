@@ -16,6 +16,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
 import { DocumentInputComponent } from './document-input/document-input.component';
 import { DocumentDetailComponent } from './document-detail/document-detail.component';
 import { NotConnectedComponent } from './not-connected/not-connected.component';
+import { AddressOrHashComponent } from './address-or-hash/address-or-hash.component';
 
 @NgModule({
     declarations: [
@@ -23,7 +24,8 @@ import { NotConnectedComponent } from './not-connected/not-connected.component';
         TopBarComponent,
         DocumentInputComponent,
         DocumentDetailComponent,
-        NotConnectedComponent
+        NotConnectedComponent,
+        AddressOrHashComponent
     ],
     imports: [
         BrowserModule,

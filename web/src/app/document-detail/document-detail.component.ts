@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
-import { Clipboard } from '@angular/cdk/clipboard'
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { ethers } from 'ethers'
 import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
-import Utils from '../utils'
+import { Mode as AddressOrHashMode } from '../address-or-hash/address-or-hash.component';
 
 import EthNOS from '../EthNOS.json';
 
@@ -54,21 +53,21 @@ export class DocumentDetailComponent implements OnInit {
 
     private ethereumConnectionContextServiceSubscription: Subscription;
 
+    CertificationState = CertificationState;
+    AddressOrHash = AddressOrHashMode;
+
     documentHash: string | null = null;
-    shortenedDocumentHash: string | null = null;
     certificationState: CertificationState | null = null;
     submitter: string | null = null;
-    shortenedSubmitter: string | null = null;
     submissionTime: Date | null = null;
     certificationTime: Date | null = null;
     signatories: SigningInfo[] = [];
+
     isBusy: boolean = true;
-    CertificationState = CertificationState;
 
     constructor(
         private route: ActivatedRoute,
         private ethereumConnectionContextService: EthereumConnectionContextService,
-        private clipboard: Clipboard,
         private snackBar: MatSnackBar,
         private router: Router) {
         this.ethereumConnectionContextServiceSubscription =
@@ -89,7 +88,6 @@ export class DocumentDetailComponent implements OnInit {
 
             this.documentHash = this.route.snapshot.params['documentHash'];
             // console.log('documentHash', this.documentHash);
-            this.shortenedDocumentHash = Utils.shortenAddressOrHash(this.documentHash!);
 
             const chainId =
                 (await this.ethereumConnectionContextService.web3Provider!.getNetwork()).chainId;
@@ -116,8 +114,6 @@ export class DocumentDetailComponent implements OnInit {
                     ? verifyDocumentResult.submitter
                     : null;
             // console.log('submitter', this.submitter);
-            this.shortenedSubmitter =
-                this.submitter ? Utils.shortenAddressOrHash(this.submitter!) : null;
 
             //--
 
@@ -167,11 +163,6 @@ export class DocumentDetailComponent implements OnInit {
             this.snackBar.open("Unexpected Error: Cannot query document!", undefined, { duration: 5000, panelClass: ["snackBar", "snackBarError"] });
             this.router.navigateByUrl('/');
         }
-    }
-
-    copyToClipboard(text: string) {
-        this.clipboard.copy(text);
-        this.snackBar.open("Copied to clipboard.", undefined, { duration: 2000, panelClass: "snackBar" });
     }
 
     ngOnDestroy() {

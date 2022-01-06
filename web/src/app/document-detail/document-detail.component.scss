@@ -12,20 +12,12 @@
     align-items: center;
 }
 
-a {
-    color: inherit;
-}
-
-.documentHash {
-    margin-bottom: 0px;
-}
-
 mat-icon {
     vertical-align: top;
     transform: scale(0.7);
 }
 
-mat-icon.document {
+app-address-or-hash.document {
     margin-left: 5px;
 }
 

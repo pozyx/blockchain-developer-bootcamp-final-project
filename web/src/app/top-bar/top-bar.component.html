@@ -32,11 +32,12 @@
                 class="mat-subheading-1">
                 Switch your Ethereum wallet to Rinkeby (or local) testnet
             </span>
-            <span *ngIf="isEthereumProviderConnected && isEthereumProviderConnectedToCompatibleNetwork"
-                class="mat-subheading-1">
-                <mat-icon class="logged-in material-icons">perm_identity</mat-icon>
-                {{shortenedSelectedAddress}}
-            </span>
+            <div class="mat-subheading-1" *ngIf="isEthereumProviderConnected && isEthereumProviderConnectedToCompatibleNetwork">
+                <app-address-or-hash
+                    [mode]="AddressOrHash.Address"
+                    [addressOrHash]="selectedAddress!">
+                </app-address-or-hash>
+            </div>
         </mat-toolbar-row>
     </mat-toolbar>
 </div>
