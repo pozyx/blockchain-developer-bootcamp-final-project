@@ -53,6 +53,8 @@ export class DocumentDetailComponent implements OnInit {
 
     private ethereumConnectionContextServiceSubscription: Subscription;
 
+    private signingBalance: bigint | null = null;
+
     CertificationState = CertificationState;
     AddressOrHash = AddressOrHashMode;
 
@@ -62,6 +64,8 @@ export class DocumentDetailComponent implements OnInit {
     submissionTime: Date | null = null;
     certificationTime: Date | null = null;
     signatories: SigningInfo[] = [];
+    formattedSigningBalance : string | null = null;
+    supportsEtherlessSigning : boolean | null = null;
 
     isBusy: boolean = true;
 
@@ -102,6 +106,10 @@ export class DocumentDetailComponent implements OnInit {
                 contractAddress,
                 EthNOS.abi,
                 this.ethereumConnectionContextService.web3Signer!);
+
+            const paymasterContractAddress = await ethNOS.ethNOSPaymaster();
+            // console.log('paymasterContractAddress', paymasterContractAddress);
+            this.supportsEtherlessSigning = paymasterContractAddress != ethers.constants.AddressZero;
 
             const verifyDocumentResult = await ethNOS.verifyDocument(this.documentHash);
             // console.log(verifyDocumentResult);
@@ -151,6 +159,15 @@ export class DocumentDetailComponent implements OnInit {
                     ));
             }
             console.log('signatories', this.signatories); // TODO: display
+
+            //--
+
+            if (this.supportsEtherlessSigning)
+            {
+                this.signingBalance = (await ethNOS.getDocumentSigningBalance(this.documentHash)).toBigInt() as bigint;
+                // console.log('signingBalance', this.signingBalance);
+                this.formattedSigningBalance = ethers.utils.formatUnits(this.signingBalance);
+            }
 
             this.isBusy = false;
         }

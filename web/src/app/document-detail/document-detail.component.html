@@ -37,5 +37,11 @@
             <mat-icon class="material-icons">schedule</mat-icon>
             {{submissionTime | date:'medium'}}
         </div>
+        <div class="mat-subheading-1 infoRow notImportant" *ngIf="supportsEtherlessSigning && (certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified)">
+            Signing balance:
+            <mat-icon class="material-icons">savings</mat-icon>
+            {{formattedSigningBalance}}
+            ETH
+        </div>
     </div>
 </div>

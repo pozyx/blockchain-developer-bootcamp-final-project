@@ -15,6 +15,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
     // - UI: document detail - view
     //   - display document information
+    //     - align and tidy up
     //   - TODOs in document-detail
     // - UI: events
     //   - show popups with event information
@@ -122,7 +123,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     string public override versionRecipient = "2.2.4";
 
     /// Paymaster contract which manages paying for transactions using GSN.
-    EthNOSPaymaster private ethNOSPaymaster;
+    EthNOSPaymaster public ethNOSPaymaster;
 
     /// Signing and certification information for all documents (key is keccak256 hash of the document).
     mapping (bytes32 => DocumentInfo) private documents;
@@ -163,6 +164,12 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     /// Event emited when document is certified (all requited signatories signed the document).
     /// @param documentHash Keccak256 hash of the document.
     event DocumentCertified(bytes32 documentHash);
+
+    /// Check paymaster contract is set.
+    modifier isEthNOSPaymasterSet() {
+        require(address(ethNOSPaymaster) != address(0), "Paymaster contract not set");
+        _;
+      }
 
     /**
      * Check document hash is not empty.
@@ -353,6 +360,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
      * Funds paymaster (relay hub) with ether to allow ether-less signing (using fundDocumentSigning) by required signatories using GSN.
      * Amount will be usable only for signing the specified document.
      *
+     * Only allowed when EthNOSPaymaster is set (etherless signing is supported).
      * Only allowed to be called by document submitter.
      *
      * @param documentHash Keccak256 hash of the document (computed off-chain). Only document pending certification is allowed.
@@ -361,6 +369,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
         bytes32 documentHash)
         public
         payable
+        isEthNOSPaymasterSet
         documentValid(documentHash)
         onlySubmitter(documentHash)
         onlyPendingCertification(documentHash) {
@@ -383,6 +392,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
      * This is usually called after document is certified to get unspent amount back to submitter,
      * but it is not a requirement.
      *
+     * Only allowed when EthNOSPaymaster is set (etherless signing is supported).
      * Only allowed to be called by document submitter.
      *
      * @param documentHash Keccak256 hash of the document (computed off-chain). Only previously submitted documents are allowed.
@@ -390,6 +400,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     function withdrawDocumentSigningBalance(
         bytes32 documentHash)
         external
+        isEthNOSPaymasterSet
         documentValid(documentHash)
         onlySubmitter(documentHash) {
         DocumentInfo storage document = documents[documentHash];
@@ -406,7 +417,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     /**
      * Checks balance of ether previously funded for ether-less signing (using fundDocumentSigning).
      *
-     * Only allowed to be called by document submitter.
+     * Only allowed when EthNOSPaymaster is set (etherless signing is supported).
      *
      * @param documentHash Keccak256 hash of the document (computed off-chain). Only previously submitted documents are allowed.
      *
@@ -416,8 +427,8 @@ contract EthNOS is BaseRelayRecipient, Ownable {
         bytes32 documentHash)
         external
         view
+        isEthNOSPaymasterSet
         documentValid(documentHash)
-        onlySubmitter(documentHash)
         returns (uint signingBalance) {
         return documents[documentHash].signingBalance;
     }

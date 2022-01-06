@@ -12,7 +12,7 @@ import "./EthNOS.sol";
  */
 contract EthNOSPaymaster is BasePaymaster {
     /// EthNOS contract paymaster will pay for.
-    EthNOS private ethNOS;
+    EthNOS public ethNOS;
 
     /// Gas used by postRelayedCall, for proper gas calculation.
     uint public gasUsedByPost;

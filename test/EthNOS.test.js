@@ -620,19 +620,6 @@ contract("EthNOS", async accounts => {
                     ethNOS.getDocumentSigningBalance(
                         emptyDocument));
             });
-
-            it("should revert on document submitted by someone else", async () => {
-                const sampleDocument = getRandomDocument();
-
-                await ethNOS.submitDocument(
-                    sampleDocument,
-                    [accounts[2]],
-                    { from: accounts[1] });
-
-                await catchRevert(
-                    ethNOS.getDocumentSigningBalance(
-                        sampleDocument));
-            });
         });
 
         describe("fundDocumentSigning", () => {
