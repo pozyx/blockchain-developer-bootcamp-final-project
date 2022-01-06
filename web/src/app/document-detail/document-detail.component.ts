@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
+import { Clipboard } from '@angular/cdk/clipboard'
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { ethers } from 'ethers'
 import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
@@ -50,7 +53,9 @@ export class DocumentDetailComponent implements OnInit {
 
     private ethereumConnectionContextServiceSubscription: Subscription;
 
-    documentHash: string | null = null;
+    private documentHash: string | null = null;
+
+    shortenedDocumentHash: string | null = null;
     certificationState: CertificationState | null = null;
     submitter: string | null = null;
     submissionTime: Date | null = null;
@@ -59,7 +64,10 @@ export class DocumentDetailComponent implements OnInit {
 
     constructor(
         private route: ActivatedRoute,
-        private ethereumConnectionContextService: EthereumConnectionContextService) {
+        private ethereumConnectionContextService: EthereumConnectionContextService,
+        private clipboard: Clipboard,
+        private snackBar: MatSnackBar,
+        private router: Router) {
         this.ethereumConnectionContextServiceSubscription =
             ethereumConnectionContextService.isEthereumConnectionReady$.subscribe(val => {
                 if (val)
@@ -72,77 +80,91 @@ export class DocumentDetailComponent implements OnInit {
             this.loadDocument();
     }
 
-    // TODO: error handling
-    // TODO: busy indicator? check on testnet if it is slow
     async loadDocument() {
-        this.documentHash = this.route.snapshot.params['documentHash'];
-        console.log('documentHash', this.documentHash); // TODO: display
+        try {
+            this.documentHash = this.route.snapshot.params['documentHash'];
+            this.shortenedDocumentHash = this.documentHash!.substring(0, 10)
+                + '.....' + this.documentHash!.substring(this.documentHash!.length - 10);
 
-        const chainId =
-            (await this.ethereumConnectionContextService.web3Provider!.getNetwork()).chainId;
+            const chainId =
+                (await this.ethereumConnectionContextService.web3Provider!.getNetwork()).chainId;
 
-        if (!isKeyof(EthNOS.networks, chainId))
-            throw new Error(`Unsupported Chain ID (${chainId})`);
+            if (!isKeyof(EthNOS.networks, chainId))
+                throw new Error(`Unsupported Chain ID (${chainId})`);
 
-        const contractAddress = (EthNOS.networks[chainId] as INetwork).address;
+            const contractAddress = (EthNOS.networks[chainId] as INetwork).address;
 
-        console.log('contractAddress', contractAddress); // TODO: remove
+            // console.log('contractAddress', contractAddress);
 
-        const ethNOS = new ethers.Contract(
-            contractAddress,
-            EthNOS.abi,
-            this.ethereumConnectionContextService.web3Signer!);
+            const ethNOS = new ethers.Contract(
+                contractAddress,
+                EthNOS.abi,
+                this.ethereumConnectionContextService.web3Signer!);
 
-        const verifyDocumentResult = await ethNOS.verifyDocument(this.documentHash);
-        console.log(verifyDocumentResult); // TODO: remove
+            //--
 
-        this.certificationState = verifyDocumentResult.certificationState;
-        console.log('certificationState', CertificationState[this.certificationState as number]); // TODO: display
+            // TODO: busy indicator? check on testnet if it is slow
+            const verifyDocumentResult = await ethNOS.verifyDocument(this.documentHash);
+            console.log(verifyDocumentResult); // TODO: remove
 
-        this.submitter =
-            verifyDocumentResult.submitter != ethers.constants.AddressZero
-                ? verifyDocumentResult.submitter
-                : null;
-        console.log('submitter', this.submitter); // TODO: display
+            this.certificationState = verifyDocumentResult.certificationState;
+            console.log('certificationState', CertificationState[this.certificationState as number]); // TODO: display
 
-        // TODO: extract time conversion?
-        this.submissionTime =
-            verifyDocumentResult.currentCertification.submissionTime != 0
-                ? new Date(verifyDocumentResult.currentCertification.submissionTime * 1000)
-                : null;
-        console.log('submissionTime', this.submissionTime); // TODO: display
+            this.submitter =
+                verifyDocumentResult.submitter != ethers.constants.AddressZero
+                    ? verifyDocumentResult.submitter
+                    : null;
+            console.log('submitter', this.submitter); // TODO: display
 
-        // TODO: extract time conversion?
-        this.certificationTime =
-            verifyDocumentResult.currentCertification.certificationTime != 0
-                ? new Date(verifyDocumentResult.currentCertification.certificationTime * 1000)
-                : null;
-        console.log('certificationTime', this.certificationTime); // TODO: display
+            // TODO: extract time conversion?
+            this.submissionTime =
+                verifyDocumentResult.currentCertification.submissionTime != 0
+                    ? new Date(verifyDocumentResult.currentCertification.submissionTime * 1000)
+                    : null;
+            console.log('submissionTime', this.submissionTime); // TODO: display
 
-        this.signatories = [];
+            // TODO: extract time conversion?
+            this.certificationTime =
+                verifyDocumentResult.currentCertification.certificationTime != 0
+                    ? new Date(verifyDocumentResult.currentCertification.certificationTime * 1000)
+                    : null;
+            console.log('certificationTime', this.certificationTime); // TODO: display
 
-        for (let signatory of verifyDocumentResult.currentCertification.requiredSignatories) {
+            this.signatories = [];
 
-            let signTime: Date | null = null;
+            for (let signatory of verifyDocumentResult.currentCertification.requiredSignatories) {
 
-            for (let signature of verifyDocumentResult.signatures) {
-                if (signature.signatory == signatory) {
-                    // TODO: extract time conversion?
-                    signTime =
-                        signature.signTime != 0
-                            ? new Date(signature.signTime * 1000)
-                            : null;
-                    break;
+                let signTime: Date | null = null;
+
+                for (let signature of verifyDocumentResult.signatures) {
+                    if (signature.signatory == signatory) {
+                        // TODO: extract time conversion?
+                        signTime =
+                            signature.signTime != 0
+                                ? new Date(signature.signTime * 1000)
+                                : null;
+                        break;
+                    }
                 }
-            }
 
-            this.signatories.push(
-                new SigningInfo(
-                    signatory as string,
-                    signTime
-                ));
+                this.signatories.push(
+                    new SigningInfo(
+                        signatory as string,
+                        signTime
+                    ));
+            }
+            console.log('signatories', this.signatories); // TODO: display
         }
-        console.log('signatories', this.signatories); // TODO: display
+        catch (err) {
+            console.log("Error querying document", err);
+            this.snackBar.open("Unexpected Error: Cannot query document!", undefined, { duration: 5000, panelClass: ["snackBar", "snackBarError"] });
+            this.router.navigateByUrl('/');
+        }
+    }
+
+    copyDocumentHashToClipboard() {
+        this.clipboard.copy(this.documentHash!);
+        this.snackBar.open("Document hash was copied to clipboard.", undefined, { duration: 2000, panelClass: "snackBar" });
     }
 
     ngOnDestroy() {

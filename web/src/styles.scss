@@ -40,3 +40,13 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     left: 50%;
     transform: translate(-50%, -50%);
 }
+
+.snackBar .mat-simple-snackbar {
+    justify-content: center;
+}
+
+.snackBarError {
+    border-style: solid;
+    border-color: var(--color-warn);
+    border-width: 4px;
+}

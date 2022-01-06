@@ -21,13 +21,15 @@ export class TopBarComponent implements OnInit {
 
     private _isEthereumProviderConnectedToCompatibleNetwork: boolean = false;
 
+    private selectedAddress: string | null = null;
+
     @Input() isInDocumentDetail: boolean = false;
 
     isInitializingEthereumProvider: boolean = true;
     isEthereumProviderPresent: boolean = false;
     isEthereumProviderConnected: boolean = false;
     isEthereumProviderActionNeeded: boolean = false;
-    selectedAddress: string | null = null;
+    shortenedSelectedAddress: string | null = null;
 
     get isEthereumProviderConnectedToCompatibleNetwork() {
         return this._isEthereumProviderConnectedToCompatibleNetwork;
@@ -99,6 +101,9 @@ export class TopBarComponent implements OnInit {
         try {
             this.web3Signer = await this.web3Provider!.getSigner();
             this.selectedAddress = await this.web3Signer!.getAddress();
+
+            this.shortenedSelectedAddress = this.selectedAddress!.substring(0, 10)
+            + '.....' + this.selectedAddress!.substring(this.selectedAddress!.length - 10);
 
             this.isEthereumProviderConnected = true;
             this.isEthereumProviderActionNeeded = false;

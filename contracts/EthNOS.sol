@@ -14,7 +14,6 @@ import "./EthNOSPaymaster.sol";
 contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
     // - UI: document detail - view
-    //   - close / home
     //   - display document information
     //   - TODOs in document-detail
     // - UI: events
@@ -62,6 +61,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     //   - npm install --global truffle
     // - manual wallet funding:
     //   - web3.eth.sendTransaction({ from: accounts[0], to: "0xBa36436982A4EEBDC5e322E4a492DE7fE064b918", value: web3.utils.toWei("1") })
+    // - issue in Chrome: if navigated too quickly after browser start, it will not be able to connect to MetaMask until refresh
 
     /// Certification state of document.
     enum CertificationState {
