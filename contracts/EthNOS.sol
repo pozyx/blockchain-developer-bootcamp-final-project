@@ -62,6 +62,11 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     // - manual wallet funding:
     //   - web3.eth.sendTransaction({ from: accounts[0], to: "0xBa36436982A4EEBDC5e322E4a492DE7fE064b918", value: web3.utils.toWei("1") })
     // - issue in Chrome: if navigated too quickly after browser start, it will not be able to connect to MetaMask until refresh
+    // - manual submit
+    //   - yarn start
+    //   - ethNOS = await EthNOS.deployed();
+    //   - ethNOS.submitDocument('0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457',[accounts[1]]);
+    //   - http://localhost:4200/document/0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457
 
     /// Certification state of document.
     enum CertificationState {

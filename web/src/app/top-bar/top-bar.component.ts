@@ -3,6 +3,7 @@ import { Router, Event, NavigationEnd } from '@angular/router';
 import { ethers } from 'ethers';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
+import Utils from '../utils'
 
 // TODO: extract?
 interface ProviderRpcError extends Error {
@@ -110,8 +111,7 @@ export class TopBarComponent implements OnInit {
             this.web3Signer = await this.web3Provider!.getSigner();
             this.selectedAddress = await this.web3Signer!.getAddress();
 
-            this.shortenedSelectedAddress = this.selectedAddress!.substring(0, 10)
-                + '.....' + this.selectedAddress!.substring(this.selectedAddress!.length - 10);
+            this.shortenedSelectedAddress = Utils.shortenAddressOrHash(this.selectedAddress!);
 
             this.isEthereumProviderConnected = true;
             this.isEthereumProviderActionNeeded = false;

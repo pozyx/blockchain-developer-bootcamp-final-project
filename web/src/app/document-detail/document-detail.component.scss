@@ -22,8 +22,11 @@ a {
 
 mat-icon {
     vertical-align: top;
-    margin-left: 5px;
     transform: scale(0.7);
+}
+
+mat-icon.document {
+    margin-left: 5px;
 }
 
 .spacer {
@@ -31,7 +34,6 @@ mat-icon {
 }
 
 button.close {
-    padding: 0px 10px 0px 0px;
     margin-right: 15px;
 }
 
@@ -48,4 +50,9 @@ mat-icon.close {
 
 .content {
     flex: 1 1 auto;
+    padding: 10px 6px 6px 10px
+}
+
+.infoRow {
+    margin-left: 27px;
 }

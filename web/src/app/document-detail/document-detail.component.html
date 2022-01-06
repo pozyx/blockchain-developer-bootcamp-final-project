@@ -1,9 +1,9 @@
 <div class="root">
-    <div class="header">
+    <div class="header mat-subheading-1">
         Document:
-        <a class="mat-subheading-1 documentHash" href="javascript: void(0);" (click)="copyDocumentHashToClipboard()"
+        <a class="mat-subheading-1 documentHash" href="javascript: void(0);" (click)="copyToClipboard(documentHash!)"
             matTooltip="Click to copy document hash to clipboard">
-            <mat-icon class="material-icons">description</mat-icon>
+            <mat-icon class="material-icons document">description</mat-icon>
             {{shortenedDocumentHash}}
         </a>
         <span class="spacer"></span>
@@ -16,6 +16,23 @@
         <mat-spinner [diameter]="50"></mat-spinner>
     </div>
     <div class="content" *ngIf="!isBusy">
-        content
+        <div class="mat-subheading-1">
+            <span *ngIf="certificationState === CertificationState.NotSubmitted">
+                <mat-icon class="material-icons">unpublished</mat-icon>
+                Document not submitted
+            </span>
+            <span *ngIf="certificationState === CertificationState.CertificationPending">
+                <mat-icon class="material-icons">published_with_changes</mat-icon>
+                Document is pending certification
+            </span>
+        </div>
+        <div class="mat-subheading-1 infoRow" *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
+            Submitted by:
+            <a class="mat-subheading-1" href="javascript: void(0);" (click)="copyToClipboard(submitter!)"
+                matTooltip="Click to copy submitter address to clipboard">
+                <mat-icon class="material-icons">perm_identity</mat-icon>
+                {{shortenedSubmitter}}
+            </a>
+        </div>
     </div>
 </div>

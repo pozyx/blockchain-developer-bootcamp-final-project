@@ -6,6 +6,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { ethers } from 'ethers'
 import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
+import Utils from '../utils'
 
 import EthNOS from '../EthNOS.json';
 
@@ -53,16 +54,16 @@ export class DocumentDetailComponent implements OnInit {
 
     private ethereumConnectionContextServiceSubscription: Subscription;
 
-    private documentHash: string | null = null;
-
+    documentHash: string | null = null;
     shortenedDocumentHash: string | null = null;
     certificationState: CertificationState | null = null;
     submitter: string | null = null;
+    shortenedSubmitter: string | null = null;
     submissionTime: Date | null = null;
     certificationTime: Date | null = null;
     signatories: SigningInfo[] = [];
-
     isBusy: boolean = true;
+    CertificationState = CertificationState;
 
     constructor(
         private route: ActivatedRoute,
@@ -87,17 +88,16 @@ export class DocumentDetailComponent implements OnInit {
             this.isBusy = true;
 
             this.documentHash = this.route.snapshot.params['documentHash'];
-            this.shortenedDocumentHash = this.documentHash!.substring(0, 10)
-                + '.....' + this.documentHash!.substring(this.documentHash!.length - 10);
+            // console.log('documentHash', this.documentHash);
+            this.shortenedDocumentHash = Utils.shortenAddressOrHash(this.documentHash!);
 
             const chainId =
                 (await this.ethereumConnectionContextService.web3Provider!.getNetwork()).chainId;
-
+            // console.log('chainId', chainId);
             if (!isKeyof(EthNOS.networks, chainId))
                 throw new Error(`Unsupported Chain ID (${chainId})`);
 
             const contractAddress = (EthNOS.networks[chainId] as INetwork).address;
-
             // console.log('contractAddress', contractAddress);
 
             const ethNOS = new ethers.Contract(
@@ -105,19 +105,21 @@ export class DocumentDetailComponent implements OnInit {
                 EthNOS.abi,
                 this.ethereumConnectionContextService.web3Signer!);
 
-            //--
-
             const verifyDocumentResult = await ethNOS.verifyDocument(this.documentHash);
-            console.log(verifyDocumentResult); // TODO: remove
+            // console.log(verifyDocumentResult);
 
             this.certificationState = verifyDocumentResult.certificationState;
-            console.log('certificationState', CertificationState[this.certificationState as number]); // TODO: display
+            // console.log('certificationState', CertificationState[this.certificationState as number]);
 
             this.submitter =
                 verifyDocumentResult.submitter != ethers.constants.AddressZero
                     ? verifyDocumentResult.submitter
                     : null;
-            console.log('submitter', this.submitter); // TODO: display
+            // console.log('submitter', this.submitter);
+            this.shortenedSubmitter =
+                this.submitter ? Utils.shortenAddressOrHash(this.submitter!) : null;
+
+            //--
 
             // TODO: extract time conversion?
             this.submissionTime =
@@ -167,9 +169,9 @@ export class DocumentDetailComponent implements OnInit {
         }
     }
 
-    copyDocumentHashToClipboard() {
-        this.clipboard.copy(this.documentHash!);
-        this.snackBar.open("Document hash was copied to clipboard.", undefined, { duration: 2000, panelClass: "snackBar" });
+    copyToClipboard(text: string) {
+        this.clipboard.copy(text);
+        this.snackBar.open("Copied to clipboard.", undefined, { duration: 2000, panelClass: "snackBar" });
     }
 
     ngOnDestroy() {
