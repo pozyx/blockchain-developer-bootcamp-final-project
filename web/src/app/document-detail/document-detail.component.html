@@ -32,5 +32,10 @@
                 [addressOrHash]="submitter!">
             </app-address-or-hash>
         </div>
+        <div class="mat-subheading-1 infoRow" *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
+            Submitted on:
+            <mat-icon class="material-icons">schedule</mat-icon>
+            {{submissionTime | date:'medium'}}
+        </div>
     </div>
 </div>

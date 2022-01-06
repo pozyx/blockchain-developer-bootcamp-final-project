@@ -115,14 +115,10 @@ export class DocumentDetailComponent implements OnInit {
                     : null;
             // console.log('submitter', this.submitter);
 
-            //--
+            this.submissionTime = this.parseTimeStamp(verifyDocumentResult.currentCertification.submissionTime);
+            // console.log('submissionTime', this.submissionTime);
 
-            // TODO: extract time conversion?
-            this.submissionTime =
-                verifyDocumentResult.currentCertification.submissionTime != 0
-                    ? new Date(verifyDocumentResult.currentCertification.submissionTime * 1000)
-                    : null;
-            console.log('submissionTime', this.submissionTime); // TODO: display
+            //--
 
             // TODO: extract time conversion?
             this.certificationTime =
@@ -167,5 +163,11 @@ export class DocumentDetailComponent implements OnInit {
 
     ngOnDestroy() {
         this.ethereumConnectionContextServiceSubscription.unsubscribe();
+    }
+
+    private parseTimeStamp(ts: any) : Date | null {
+        return ts != 0
+            ? new Date(ts * 1000)
+            : null;
     }
 }
