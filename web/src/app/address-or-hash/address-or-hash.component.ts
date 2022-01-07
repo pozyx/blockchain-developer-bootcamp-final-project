@@ -39,6 +39,6 @@ export class AddressOrHashComponent {
 
     copyToClipboard() {
         this.clipboard.copy(this.addressOrHash);
-        this.snackBar.open("Copied to clipboard.", undefined, { duration: 2000, panelClass: "snackBar" });
+        this.snackBar.open('Copied to clipboard.', undefined, { duration: 2000, panelClass: 'snackBar' });
     }
 }

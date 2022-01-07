@@ -13,10 +13,6 @@ import "./EthNOSPaymaster.sol";
  */
 contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
-    // - UI: events
-    //   - show popups with event information
-    //   - refresh on event
-    //   - try Rinkeby
     // - UI: verify document for state change operations
     // - UI: simple submit
     // - UI: simple sign
@@ -140,40 +136,40 @@ contract EthNOS is BaseRelayRecipient, Ownable {
 
     /// Event emited when document is submitted for certification.
     /// @param documentHash Keccak256 hash of the document.
-    event DocumentSubmitted(bytes32 documentHash);
+    event DocumentSubmitted(bytes32 indexed documentHash);
 
     /// Event emited when certification submission of previously submitted document is amended.
     /// @param documentHash Keccak256 hash of the document.
-    event DocumentSubmissionAmended(bytes32 documentHash);
+    event DocumentSubmissionAmended(bytes32 indexed documentHash);
 
     /// Event emited when certification submission of previously submitted document is delete.
     /// @param documentHash Keccak256 hash of the document.
-    event DocumentSubmissionDeleted(bytes32 documentHash);
+    event DocumentSubmissionDeleted(bytes32 indexed documentHash);
 
     /// Event emited when paymaster (relay hub) is funded with ether to allow ether-less signing by required signatories using GSN.
     /// @param documentHash Keccak256 hash of the document.
     /// @param amount Amount funded for signing the specified document.
-    event DocumentSigningFunded(bytes32 documentHash, uint amount);
+    event DocumentSigningFunded(bytes32 indexed documentHash, uint amount);
 
     /// Event emited when ether previously funded for ether-less signing is withdrawn from paymaster (relay hub).
     /// @param documentHash Keccak256 hash of the document.
     /// @param amount Amount withdrawn from signing the specified document.
-    event DocumentSigningBalanceWithdrawn(bytes32 documentHash, uint amount);
+    event DocumentSigningBalanceWithdrawn(bytes32 indexed documentHash, uint amount);
 
     /// Event emited when document is signed.
     /// @param documentHash Keccak256 hash of the document.
     /// @param signatory Address of the signatory.
-    event DocumentSigned(bytes32 documentHash, address signatory);
+    event DocumentSigned(bytes32 indexed documentHash, address signatory);
 
     /// Event emited when ether-less signing was performed and spent amount is charged
     /// (substracted from balance for signing the specified document).
     /// @param documentHash Keccak256 hash of the document.
     /// @param amount Amount charged for signing the specified document.
-    event DocumentSigningCharged(bytes32 documentHash, uint amount);
+    event DocumentSigningCharged(bytes32 indexed documentHash, uint amount);
 
     /// Event emited when document is certified (all requited signatories signed the document).
     /// @param documentHash Keccak256 hash of the document.
-    event DocumentCertified(bytes32 documentHash);
+    event DocumentCertified(bytes32 indexed documentHash);
 
     /// Check paymaster contract is set.
     modifier isEthNOSPaymasterSet() {

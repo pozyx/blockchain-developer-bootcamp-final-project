@@ -22,11 +22,11 @@ contract EthNOSPaymaster is BasePaymaster {
 
     /// Event emited before signDocument call is relayed.
     /// @param documentHash Keccak256 hash of the document.
-    event PreRelayed(bytes32 documentHash);
+    event PreRelayed(bytes32 indexed documentHash);
 
     /// Event emited after signDocument call is relayed.
     /// @param documentHash Keccak256 hash of the document.
-    event PostRelayed(bytes32 documentHash);
+    event PostRelayed(bytes32 indexed documentHash);
 
     /**
      * Sets EthNOS contract paymaster will pay for.

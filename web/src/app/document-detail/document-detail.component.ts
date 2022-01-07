@@ -47,6 +47,8 @@ interface INetwork {
 })
 export class DocumentDetailComponent implements OnInit {
 
+    private static readonly considerEventNewWhenReceivedAfterMs: number = 1000;
+
     private ethereumConnectionContextServiceSubscription: Subscription;
 
     private signingBalance: bigint | null = null;
@@ -63,6 +65,7 @@ export class DocumentDetailComponent implements OnInit {
     formattedSigningBalance : string | null = null;
     supportsEtherlessSigning : boolean | null = null;
 
+    ethNOS: ethers.Contract | null = null;
     isBusy: boolean = true;
 
     constructor(
@@ -98,10 +101,12 @@ export class DocumentDetailComponent implements OnInit {
             const contractAddress = (EthNOS.networks[chainId] as INetwork).address;
             // console.log('contractAddress', contractAddress);
 
+            if (this.ethNOS != null) this.ethNOS.removeAllListeners();
             const ethNOS = new ethers.Contract(
                 contractAddress,
                 EthNOS.abi,
                 this.ethereumConnectionContextService.web3Signer!);
+            this.ethNOS = ethNOS;
 
             const paymasterContractAddress = await ethNOS.ethNOSPaymaster();
             // console.log('paymasterContractAddress', paymasterContractAddress);
@@ -153,11 +158,93 @@ export class DocumentDetailComponent implements OnInit {
                 this.formattedSigningBalance = ethers.utils.formatUnits(this.signingBalance);
             }
 
+            const eventsSubscriptionTime = new Date();
+            const isEventNew = function() : boolean {
+                const eventTime = new Date();
+                return (eventTime.getTime() - eventsSubscriptionTime.getTime() >
+                    DocumentDetailComponent.considerEventNewWhenReceivedAfterMs);
+            }
+
+            ethNOS.on(
+                ethNOS.filters.DocumentSubmitted(this.documentHash),
+                (documentHash, event) => {
+                // console.log('DocumentSubmitted', documentHash, event);
+                if (!isEventNew()) return;
+                this.snackBar.open('Document submitted.', undefined, { duration: 2000, panelClass: 'snackBar' });
+                this.loadDocument();
+            });
+
+            ethNOS.on(
+                ethNOS.filters.DocumentSubmissionAmended(this.documentHash),
+                (documentHash, event) => {
+                // console.log('DocumentSubmissionAmended', documentHash, event);
+                if (!isEventNew()) return;
+                this.snackBar.open('Document submission amended.', undefined, { duration: 2000, panelClass: 'snackBar' });
+                this.loadDocument();
+            });
+
+            ethNOS.on(
+                ethNOS.filters.DocumentSubmissionDeleted(this.documentHash),
+                (documentHash, event) => {
+                // console.log('DocumentSubmissionDeleted', documentHash, event);
+                if (!isEventNew()) return;
+                this.snackBar.open('Document submission deleted.', undefined, { duration: 2000, panelClass: 'snackBar' });
+                this.loadDocument();
+            });
+
+            ethNOS.on(
+                ethNOS.filters.DocumentSigningFunded(this.documentHash),
+                (documentHash, amount, event) => {
+                // console.log('DocumentSigningFunded', documentHash, amount, event);
+                if (!isEventNew()) return;
+                this.snackBar.open(`Document signing funded (${ethers.utils.formatUnits(amount)} ETH).`, undefined, { duration: 2000, panelClass: 'snackBar' });
+                this.loadDocument();
+            });
+
+            ethNOS.on(
+                ethNOS.filters.DocumentSigningBalanceWithdrawn(this.documentHash),
+                (documentHash, amount, event) => {
+                // console.log('DocumentSigningBalanceWithdrawn', documentHash, amount, event);
+                if (!isEventNew()) return;
+                this.snackBar.open(`Document signing balance withdrawn (${ethers.utils.formatUnits(amount)} ETH).`, undefined, { duration: 2000, panelClass: 'snackBar' });
+                this.loadDocument();
+            });
+
+            ethNOS.on(
+                ethNOS.filters.DocumentSigned(this.documentHash),
+                (documentHash, signatory, event) => {
+                // console.log('DocumentSigned', documentHash, signatory, event);
+                if (!isEventNew()) return;
+                this.snackBar.open(`Document signed by ${signatory}.`, undefined, { duration: 2000, panelClass: 'snackBar' });
+                this.loadDocument();
+            });
+
+            ethNOS.on(
+                ethNOS.filters.DocumentSigningCharged(this.documentHash),
+                (documentHash, amount, event) => {
+                // console.log('DocumentSigningCharged', documentHash, amount, event);
+                if (!isEventNew()) return;
+                // not showing for now
+                // this.snackBar.open(`Document signing charged (${ethers.utils.formatUnits(amount)} ETH).`, undefined, { duration: 2000, panelClass: 'snackBar' });
+                this.loadDocument();
+            });
+
+            ethNOS.on(
+                ethNOS.filters.DocumentCertified(this.documentHash),
+                (documentHash, event) => {
+                // console.log('DocumentCertified', documentHash, event);
+                if (!isEventNew()) return;
+                this.snackBar.open('Document certified.', undefined, { duration: 2000, panelClass: 'snackBar' });
+                this.loadDocument();
+            });
+
             this.isBusy = false;
         }
         catch (err) {
-            console.log("Error querying document", err);
-            this.snackBar.open("Unexpected Error: Cannot query document!", undefined, { duration: 5000, panelClass: ["snackBar", "snackBarError"] });
+            if (this.ethNOS != null) this.ethNOS.removeAllListeners();
+            this.ethNOS = null;
+            console.log('Error querying document', err);
+            this.snackBar.open('Unexpected Error: Cannot query document!', undefined, { duration: 5000, panelClass: ['snackBar', 'snackBarError'] });
             this.router.navigateByUrl('/');
         }
     }
