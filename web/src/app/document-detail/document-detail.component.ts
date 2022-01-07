@@ -9,14 +9,12 @@ import { Mode as AddressOrHashMode } from '../address-or-hash/address-or-hash.co
 
 import EthNOS from '../EthNOS.json';
 
-// TODO: extract?
 enum CertificationState {
     NotSubmitted = 0,
     CertificationPending = 1,
     Certified = 2
 }
 
-// TODO: extract?
 class SigningInfo {
     constructor(
         private _signatory: string,
@@ -31,7 +29,6 @@ class SigningInfo {
     }
 }
 
-// TODO: extract?
 function isKeyof<T extends object>(
     obj: T,
     possibleKey: keyof any)
@@ -39,7 +36,6 @@ function isKeyof<T extends object>(
     return possibleKey in obj;
 }
 
-// TODO: extract?
 interface INetwork {
     address: string;
 }
