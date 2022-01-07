@@ -148,7 +148,7 @@ export class DocumentDetailComponent implements OnInit {
                         signTime
                     ));
             }
-            console.log('signatories', this.signatories); // TODO: display
+            // console.log('signatories', this.signatories);
 
             if (this.supportsEtherlessSigning)
             {

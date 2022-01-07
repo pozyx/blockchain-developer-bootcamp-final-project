@@ -30,11 +30,9 @@ button.close {
     margin-right: 15px;
 }
 
-mat-icon.close {
-    margin-top: -2px;
-}
-
-mat-icon.clock {
+mat-icon.close,
+mat-icon.clock,
+mat-icon.signatoryStatus {
     margin-top: -2px;
 }
 
@@ -71,12 +69,8 @@ mat-card-content {
     opacity: 50%;
 }
 
-.verified {
+.green {
     color: rgb(77, 228, 77);
-}
-
-mat-card {
-    max-width: 400px;
 }
 
 div.statusIcon {
@@ -89,6 +83,30 @@ mat-icon.statusIcon {
     transform: scale(2);
 }
 
-table.signatories {
+.span2columns {
     grid-column: span 2;
+}
+
+.signatoriesLabel {
+    margin-top: 3px;
+}
+
+table.mat-table {
+    margin-bottom: 3px;
+}
+
+tr.mat-row {
+    height: auto;
+}
+
+td.mat-cell {
+    border-style: none;
+}
+
+td.mat-column-signatory {
+    padding: 3px 0px 3px 0px !important;
+}
+
+td.mat-column-signTime {
+    padding: 3px 0px 3px 10px !important;
 }

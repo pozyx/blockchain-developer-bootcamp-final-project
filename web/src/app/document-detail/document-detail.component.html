@@ -21,7 +21,7 @@
                     <mat-icon *ngIf="certificationState === CertificationState.CertificationPending"
                         class="material-icons statusIcon">published_with_changes</mat-icon>
                     <mat-icon *ngIf="certificationState === CertificationState.Certified"
-                        class="material-icons statusIcon verified">verified</mat-icon>
+                        class="material-icons statusIcon green">verified</mat-icon>
                 </div>
                 <mat-card-title>
                     <span *ngIf="certificationState === CertificationState.NotSubmitted">
@@ -71,6 +71,29 @@
                     <mat-icon class="material-icons clock">schedule</mat-icon>
                     {{submissionTime | date:'medium'}}
                 </div>
+                <div class="span2columns signatoriesLabel" *ngIf="signatories.length > 0">
+                    <span class="faded">Signatories:</span>
+                </div>
+                <table mat-table class="span2columns" *ngIf="signatories.length > 0" [dataSource]="signatories">
+                    <ng-container matColumnDef="signatory">
+                        <th mat-header-cell *matHeaderCellDef>Signatory</th>
+                        <td mat-cell *matCellDef="let element">
+                            <app-address-or-hash [mode]="AddressOrHash.Address" [addressOrHash]="element.signatory">
+                            </app-address-or-hash>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="signTime">
+                        <th mat-header-cell *matHeaderCellDef>Signed</th>
+                        <td mat-cell *matCellDef="let element">
+                            <mat-icon class="material-icons signatoryStatus green" *ngIf="element.signTime != null"
+                                matTooltip="Signed">check_circle</mat-icon>
+                            <mat-icon class="material-icons signatoryStatus" *ngIf="element.signTime == null"
+                                matTooltip="Not signed yet">hourglass_empty</mat-icon>
+                            {{element.signTime | date:'medium'}}
+                        </td>
+                    </ng-container>
+                    <tr mat-row *matRowDef="let row; columns: ['signatory','signTime'];"></tr>
+                </table>
                 <div *ngIf="certificationState === CertificationState.Certified">
                     <span class="faded">Certified on:</span>
                 </div>
