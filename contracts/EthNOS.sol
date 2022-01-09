@@ -13,7 +13,6 @@ import "./EthNOSPaymaster.sol";
  */
 contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
-    // - UI: simple sign
     // - UI: fund/withdraw for etherless sign
     // - UI: etherless sign
     //   - (see OpenGSN/SimpleUse, OpenGSN React app)
@@ -40,6 +39,8 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     //   - amend and document design pattern decisions
     //   - amend and document attack vectors protections
     //   - amend/prepare README.md (use example project as template)
+    //   - known issues:
+    //     - event sometimes does not come (Rinkeby)
     //   - (certification state chart)
     //   - screencast
 

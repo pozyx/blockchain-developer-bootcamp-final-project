@@ -18,7 +18,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { DocumentInputComponent } from './document-input/document-input.component';
-import { DocumentDetailComponent, SubmitDocumentConfirmationDialog } from './document-detail/document-detail.component';
+import { DocumentDetailComponent, SubmitDocumentConfirmationDialog, SignDocumentConfirmationDialog } from './document-detail/document-detail.component';
 import { NotConnectedComponent } from './not-connected/not-connected.component';
 import { AddressOrHashComponent } from './address-or-hash/address-or-hash.component';
 
@@ -30,7 +30,8 @@ import { AddressOrHashComponent } from './address-or-hash/address-or-hash.compon
         DocumentDetailComponent,
         NotConnectedComponent,
         AddressOrHashComponent,
-        SubmitDocumentConfirmationDialog
+        SubmitDocumentConfirmationDialog,
+        SignDocumentConfirmationDialog
     ],
     imports: [
         BrowserModule,

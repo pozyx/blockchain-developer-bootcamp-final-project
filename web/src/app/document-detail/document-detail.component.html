@@ -141,6 +141,18 @@
                     </button>
                 </mat-card-content>
             </mat-card>
+            <mat-card class="sign" *ngIf="isRequiredToSign">
+                <mat-card-content class="sign>">
+                    <div class="signDescription">
+                        Your signature is required for the certification.
+                    </div>
+                    <button mat-flat-button color="accent" class="sign" matTooltip="Sign document"
+                        (click)="signDocument()">
+                        <mat-icon class="material-icons submit">edit</mat-icon>
+                        Sign
+                    </button>
+                </mat-card-content>
+            </mat-card>
         </div>
     </div>
 </div>

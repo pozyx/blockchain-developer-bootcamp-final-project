@@ -113,7 +113,8 @@ td.mat-column-signTime {
     padding: 3px 0px 3px 10px !important;
 }
 
-mat-card.submit {
+mat-card.submit,
+mat-card.sign {
     margin-top: 10px;
     padding: 10px;
 }
@@ -122,7 +123,8 @@ mat-form-field.signatories {
     width: 100%;
 }
 
-button.submit {
+button.submit,
+button.sign {
     display: block;
     margin: 15px auto 5px auto !important;
 }
@@ -135,4 +137,8 @@ mat-form-field.signatories input.mat-chip-input {
     flex: 1 0 auto;
     width: 350px;
     margin: 10px;
+}
+
+.signDescription {
+    margin: 5px 10px 0px 10px
 }

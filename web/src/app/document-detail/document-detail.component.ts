@@ -58,6 +58,13 @@ export class SubmitDocumentConfirmationDialog {
 }
 
 @Component({
+    selector: 'sign-document-confirmation',
+    templateUrl: 'sign-document-confirmation.html',
+    styleUrls: ['./sign-document-confirmation.scss']
+})
+export class SignDocumentConfirmationDialog { }
+
+@Component({
     selector: 'app-document-detail',
     templateUrl: './document-detail.component.html',
     styleUrls: ['./document-detail.component.scss']
@@ -83,11 +90,12 @@ export class DocumentDetailComponent implements OnInit {
     signatories: SigningInfo[] = [];
     formattedSigningBalance: string | null = null;
     supportsEtherlessSigning: boolean | null = null;
+    selectedAddress: string | null = null;
 
     signatoriesToSubmit: string[] = [];
 
     ethNOS: ethers.Contract | null = null;
-    isBusy: boolean = true;
+    isBusy: boolean = false;
 
     constructor(
         private route: ActivatedRoute,
@@ -109,10 +117,13 @@ export class DocumentDetailComponent implements OnInit {
 
     private async loadDocument() {
         try {
+            if (this.isBusy) return;
             this.isBusy = true;
 
             this.documentHash = this.route.snapshot.params['documentHash'];
             // console.log('documentHash', this.documentHash);
+
+            this.selectedAddress = await this.ethereumConnectionContextService.web3Signer!.getAddress();
 
             const chainId =
                 (await this.ethereumConnectionContextService.web3Provider!.getNetwork()).chainId;
@@ -195,7 +206,7 @@ export class DocumentDetailComponent implements OnInit {
         const isEventNew = function (): boolean {
             const eventTime = new Date();
             return (eventTime.getTime() - eventsSubscriptionTime.getTime() >
-                DocumentDetailComponent.considerEventNewWhenReceivedAfterMs);
+            DocumentDetailComponent.considerEventNewWhenReceivedAfterMs);
         }
 
         ethNOS.on(
@@ -318,6 +329,39 @@ export class DocumentDetailComponent implements OnInit {
                         // TODO: handle other errors?
                         else {
                             this.showMessage('Cannot submit document!', err);
+                        }
+                    }
+                }
+            });
+    }
+
+    get isRequiredToSign(): boolean {
+        return this.certificationState == CertificationState.CertificationPending &&
+            this.signatories.some(s =>
+                s.signatory == this.selectedAddress &&
+                s.signTime == null);
+    }
+
+    signDocument(): void {
+        this.dialog.open(SignDocumentConfirmationDialog)
+            .afterClosed()
+            .subscribe(async result => {
+                if (result) {
+                    try {
+                        // TODO: busy indication
+                        await this.ethNOS!.signDocument(this.documentHash);
+
+                        this.showMessage('Document signing transaction sent.');
+                    }
+                    catch (err) {
+                        const errorCode = (err as ProviderRpcError).code;
+
+                        if (errorCode == 4001) {
+                            this.showMessage('Signing rejected by user.');
+                        }
+                        // TODO: handle other errors?
+                        else {
+                            this.showMessage('Cannot sign document!', err);
                         }
                     }
                 }
