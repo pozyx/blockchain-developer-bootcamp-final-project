@@ -32,7 +32,8 @@ button.close {
 
 mat-icon.close,
 mat-icon.clock,
-mat-icon.signatoryStatus {
+mat-icon.signatoryStatus,
+mat-icon.submit {
     margin-top: -2px;
 }
 
@@ -51,17 +52,18 @@ mat-icon.signatoryStatus {
     margin: 20px;
 }
 
-mat-card {
+mat-card.status {
     padding: 25px 35px 25px 35px;
 }
 
-mat-card-content {
+mat-card.status.empty {
+    padding-bottom: 0px;
+}
+
+mat-card-content.status {
     display: grid;
     grid-gap: 5px;
     grid-template-columns: auto auto;
-}
-
-.nonEmpty {
     margin-top: 15px;
 }
 
@@ -109,4 +111,28 @@ td.mat-column-signatory {
 
 td.mat-column-signTime {
     padding: 3px 0px 3px 10px !important;
+}
+
+mat-card.submit {
+    margin-top: 10px;
+    padding: 10px;
+}
+
+mat-form-field.signatories {
+    width: 100%;
+}
+
+button.submit {
+    display: block;
+    margin: 15px auto 5px auto !important;
+}
+
+button.mat-chip-remove {
+    margin-left: auto;
+}
+
+mat-form-field.signatories input.mat-chip-input {
+    flex: 1 0 auto;
+    width: 350px;
+    margin: 10px;
 }

@@ -25,6 +25,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     // - (UI: resolve ENS addresses)
     // - (UI: fund on submit, amend/delete, show history, show orphaned signatories)
     // - (UI: cleanup TODOs)
+    // - (UI: busy indicator on hashing document)
     // - (calculate and set post gas usage)
     // - (can required amount for etherless signing be calculated?)
     // - try clean run
@@ -52,8 +53,9 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     // - clean run:
     //   - install nvm
     //   - install node (npm)
-    //   - npm install --global yarn
-    //   - npm install --global truffle
+    //   - npm install -g yarn
+    //   - npm install -g truffle
+    //   - npm install -g @angular/cli
     // - manual wallet funding:
     //   - web3.eth.sendTransaction({ from: accounts[0], to: "0xBa36436982A4EEBDC5e322E4a492DE7fE064b918", value: web3.utils.toWei("1") })
     // - issue in Chrome: if navigated too quickly after browser start, it will not be able to connect to MetaMask until refresh

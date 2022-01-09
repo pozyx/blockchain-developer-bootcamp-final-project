@@ -11,6 +11,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
+import { MatChipsModule } from '@angular/material/chips';
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -43,7 +44,8 @@ import { AddressOrHashComponent } from './address-or-hash/address-or-hash.compon
         MatSnackBarModule,
         MatProgressSpinnerModule,
         MatCardModule,
-        MatTableModule
+        MatTableModule,
+        MatChipsModule
     ],
     providers: [],
     bootstrap: [AppComponent]

@@ -13,104 +13,134 @@
         <mat-spinner [diameter]="50"></mat-spinner>
     </div>
     <div class="content" *ngIf="!isBusy">
-        <mat-card>
-            <mat-card-header>
-                <div mat-card-avatar class="statusIcon">
-                    <mat-icon *ngIf="certificationState === CertificationState.NotSubmitted"
-                        class="material-icons statusIcon">unpublished</mat-icon>
-                    <mat-icon *ngIf="certificationState === CertificationState.CertificationPending"
-                        class="material-icons statusIcon">published_with_changes</mat-icon>
-                    <mat-icon *ngIf="certificationState === CertificationState.Certified"
-                        class="material-icons statusIcon green">verified</mat-icon>
-                </div>
-                <mat-card-title>
-                    <span *ngIf="certificationState === CertificationState.NotSubmitted">
-                        Document not submitted yet
-                    </span>
-                    <span *ngIf="certificationState === CertificationState.CertificationPending">
-                        Document is pending certification
-                    </span>
-                    <span *ngIf="certificationState === CertificationState.Certified">
-                        Document is certified
-                    </span>
-                </mat-card-title>
-                <mat-card-subtitle>
-                    <span *ngIf="certificationState === CertificationState.NotSubmitted">
-                        Submit document for certification
-                    </span>
-                    <span *ngIf="certificationState === CertificationState.CertificationPending">
-                        Some signatories did not sign the document yet
-                    </span>
-                    <span *ngIf="certificationState === CertificationState.Certified">
-                        <span *ngIf="signatories.length > 0">
-                            Document was signed by all required signatories
+        <div>
+            <mat-card class="status"
+                [ngClass]="{'empty': certificationState != CertificationState.CertificationPending && certificationState != CertificationState.Certified}">
+                <mat-card-header class="status">
+                    <div mat-card-avatar class="statusIcon">
+                        <mat-icon *ngIf="certificationState === CertificationState.NotSubmitted"
+                            class="material-icons statusIcon">unpublished</mat-icon>
+                        <mat-icon *ngIf="certificationState === CertificationState.CertificationPending"
+                            class="material-icons statusIcon">published_with_changes</mat-icon>
+                        <mat-icon *ngIf="certificationState === CertificationState.Certified"
+                            class="material-icons statusIcon green">verified</mat-icon>
+                    </div>
+                    <mat-card-title>
+                        <span *ngIf="certificationState === CertificationState.NotSubmitted">
+                            Document not submitted yet
                         </span>
-                        <span *ngIf="signatories.length == 0">
-                            No signatories were required - certification is proof of existence only
+                        <span *ngIf="certificationState === CertificationState.CertificationPending">
+                            Document is pending certification
                         </span>
-                    </span>
-                </mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content
-                [ngClass]="{'nonEmpty': certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified}">
-                <div
-                    *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
-                    <span class="faded">Submitted by:</span>
-                </div>
-                <div
-                    *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
-                    <app-address-or-hash [mode]="AddressOrHash.Address" [addressOrHash]="submitter!">
-                    </app-address-or-hash>
-                </div>
-                <div
-                    *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
-                    <span class="faded">Submitted on:</span>
-                </div>
-                <div
-                    *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
-                    <mat-icon class="material-icons clock">schedule</mat-icon>
-                    {{submissionTime | date:'medium'}}
-                </div>
-                <div class="span2columns signatoriesLabel" *ngIf="signatories.length > 0">
-                    <span class="faded">Signatories:</span>
-                </div>
-                <table mat-table class="span2columns" *ngIf="signatories.length > 0" [dataSource]="signatories">
-                    <ng-container matColumnDef="signatory">
-                        <th mat-header-cell *matHeaderCellDef>Signatory</th>
-                        <td mat-cell *matCellDef="let element">
-                            <app-address-or-hash [mode]="AddressOrHash.Address" [addressOrHash]="element.signatory">
-                            </app-address-or-hash>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="signTime">
-                        <th mat-header-cell *matHeaderCellDef>Signed</th>
-                        <td mat-cell *matCellDef="let element">
-                            <mat-icon class="material-icons signatoryStatus green" *ngIf="element.signTime != null"
-                                matTooltip="Signed">check_circle</mat-icon>
-                            <mat-icon class="material-icons signatoryStatus" *ngIf="element.signTime == null"
-                                matTooltip="Not signed yet">hourglass_empty</mat-icon>
-                            {{element.signTime | date:'medium'}}
-                        </td>
-                    </ng-container>
-                    <tr mat-row *matRowDef="let row; columns: ['signatory','signTime'];"></tr>
-                </table>
-                <div *ngIf="certificationState === CertificationState.Certified">
-                    <span class="faded">Certified on:</span>
-                </div>
-                <div *ngIf="certificationState === CertificationState.Certified">
-                    <mat-icon class="material-icons clock">schedule</mat-icon>
-                    {{certificationTime | date:'medium'}}
-                </div>
-                <div class="faded"
-                    *ngIf="supportsEtherlessSigning && (certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified)">
-                    <span>Signing balance:</span>
-                </div>
-                <div class="faded"
-                    *ngIf="supportsEtherlessSigning && (certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified)">
-                    {{formattedSigningBalance}}
-                    ETH
-                </div>
-            </mat-card-content>
-        </mat-card>
+                        <span *ngIf="certificationState === CertificationState.Certified">
+                            Document is certified
+                        </span>
+                    </mat-card-title>
+                    <mat-card-subtitle>
+                        <span *ngIf="certificationState === CertificationState.NotSubmitted">
+                            Submit document for certification
+                        </span>
+                        <span *ngIf="certificationState === CertificationState.CertificationPending">
+                            Some signatories did not sign the document yet
+                        </span>
+                        <span *ngIf="certificationState === CertificationState.Certified">
+                            <span *ngIf="signatories.length > 0">
+                                Document was signed by all required signatories
+                            </span>
+                            <span *ngIf="signatories.length == 0">
+                                No signatories were required - certification is proof of existence only
+                            </span>
+                        </span>
+                    </mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content class="status">
+                    <div
+                        *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
+                        <span class="faded">Submitted by:</span>
+                    </div>
+                    <div
+                        *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
+                        <app-address-or-hash [mode]="AddressOrHash.Address" [addressOrHash]="submitter!">
+                        </app-address-or-hash>
+                    </div>
+                    <div
+                        *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
+                        <span class="faded">Submitted on:</span>
+                    </div>
+                    <div
+                        *ngIf="certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified">
+                        <mat-icon class="material-icons clock">schedule</mat-icon>
+                        {{submissionTime | date:'medium'}}
+                    </div>
+                    <div class="span2columns signatoriesLabel" *ngIf="signatories.length > 0">
+                        <span class="faded">Signatories:</span>
+                    </div>
+                    <table mat-table class="span2columns" *ngIf="signatories.length > 0" [dataSource]="signatories">
+                        <ng-container matColumnDef="signatory">
+                            <th mat-header-cell *matHeaderCellDef>Signatory</th>
+                            <td mat-cell *matCellDef="let element">
+                                <app-address-or-hash [mode]="AddressOrHash.Address" [addressOrHash]="element.signatory">
+                                </app-address-or-hash>
+                            </td>
+                        </ng-container>
+                        <ng-container matColumnDef="signTime">
+                            <th mat-header-cell *matHeaderCellDef>Signed</th>
+                            <td mat-cell *matCellDef="let element">
+                                <mat-icon class="material-icons signatoryStatus green" *ngIf="element.signTime != null"
+                                    matTooltip="Signed">check_circle</mat-icon>
+                                <mat-icon class="material-icons signatoryStatus" *ngIf="element.signTime == null"
+                                    matTooltip="Not signed yet">hourglass_empty</mat-icon>
+                                {{element.signTime | date:'medium'}}
+                            </td>
+                        </ng-container>
+                        <tr mat-row *matRowDef="let row; columns: ['signatory','signTime'];"></tr>
+                    </table>
+                    <div *ngIf="certificationState === CertificationState.Certified">
+                        <span class="faded">Certified on:</span>
+                    </div>
+                    <div *ngIf="certificationState === CertificationState.Certified">
+                        <mat-icon class="material-icons clock">schedule</mat-icon>
+                        {{certificationTime | date:'medium'}}
+                    </div>
+                    <div class="faded"
+                        *ngIf="supportsEtherlessSigning && (certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified)">
+                        <span>Signing balance:</span>
+                    </div>
+                    <div class="faded"
+                        *ngIf="supportsEtherlessSigning && (certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified)">
+                        {{formattedSigningBalance}}
+                        ETH
+                    </div>
+                </mat-card-content>
+            </mat-card>
+            <mat-card class="submit"
+                *ngIf="certificationState === CertificationState.NotSubmitted">
+                <mat-card-content class="submit">
+                    <mat-form-field class="signatories" appearance="outline" color="accent">
+                        <mat-label *ngIf="signatoriesToSubmit.length == 0 && !signatoriesChipList.focused">Click here to add required signatories...</mat-label>
+                        <mat-label *ngIf="signatoriesToSubmit.length > 0 || signatoriesChipList.focused">Required signatories</mat-label>
+                        <mat-chip-list #signatoriesChipList selectable="false" class="mat-chip-list-stacked">
+                            <mat-chip *ngFor="let signatory of signatoriesToSubmit" (removed)="removeRequiredSignatory(signatory)">
+                                <app-address-or-hash [mode]="AddressOrHash.Address" [addressOrHash]="signatory">
+                                </app-address-or-hash>
+                                <button matChipRemove>
+                                    <mat-icon>cancel</mat-icon>
+                                </button>
+                            </mat-chip>
+                            <input placeholder="Enter address..."
+                                [matChipInputFor]="signatoriesChipList"
+                                [matChipInputAddOnBlur]="true"
+                                [matChipInputSeparatorKeyCodes]="signatoriesSeparatorKeysCodes"
+                                (matChipInputTokenEnd)="addRequiredSignatory($event)">
+                        </mat-chip-list>
+                    </mat-form-field>
+                    <!-- TODO: handler -->
+                    <button mat-flat-button color="accent" class="submit" matTooltip="Submit document">
+                        <mat-icon class="material-icons submit">published_with_changes</mat-icon>
+                        Submit
+                    </button>
+                </mat-card-content>
+            </mat-card>
+        </div>
     </div>
 </div>

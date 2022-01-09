@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatChipInputEvent } from '@angular/material/chips';
+import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
 import { Subscription } from 'rxjs';
 import { ethers } from 'ethers'
 import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
@@ -53,6 +55,8 @@ export class DocumentDetailComponent implements OnInit {
 
     private signingBalance: bigint | null = null;
 
+    readonly signatoriesSeparatorKeysCodes = [ENTER, COMMA, SPACE] as const;
+
     CertificationState = CertificationState;
     AddressOrHash = AddressOrHashMode;
 
@@ -62,8 +66,10 @@ export class DocumentDetailComponent implements OnInit {
     submissionTime: Date | null = null;
     certificationTime: Date | null = null;
     signatories: SigningInfo[] = [];
-    formattedSigningBalance : string | null = null;
-    supportsEtherlessSigning : boolean | null = null;
+    formattedSigningBalance: string | null = null;
+    supportsEtherlessSigning: boolean | null = null;
+
+    signatoriesToSubmit: string[] = [];
 
     ethNOS: ethers.Contract | null = null;
     isBusy: boolean = true;
@@ -151,15 +157,14 @@ export class DocumentDetailComponent implements OnInit {
             }
             // console.log('signatories', this.signatories);
 
-            if (this.supportsEtherlessSigning)
-            {
+            if (this.supportsEtherlessSigning) {
                 this.signingBalance = (await ethNOS.getDocumentSigningBalance(this.documentHash)).toBigInt() as bigint;
                 // console.log('signingBalance', this.signingBalance);
                 this.formattedSigningBalance = ethers.utils.formatUnits(this.signingBalance);
             }
 
             const eventsSubscriptionTime = new Date();
-            const isEventNew = function() : boolean {
+            const isEventNew = function (): boolean {
                 const eventTime = new Date();
                 return (eventTime.getTime() - eventsSubscriptionTime.getTime() >
                     DocumentDetailComponent.considerEventNewWhenReceivedAfterMs);
@@ -168,75 +173,75 @@ export class DocumentDetailComponent implements OnInit {
             ethNOS.on(
                 ethNOS.filters.DocumentSubmitted(this.documentHash),
                 (documentHash, event) => {
-                // console.log('DocumentSubmitted', documentHash, event);
-                if (!isEventNew()) return;
-                this.snackBar.open('Document submitted.', undefined, { duration: 2000, panelClass: 'snackBar' });
-                this.loadDocument();
-            });
+                    // console.log('DocumentSubmitted', documentHash, event);
+                    if (!isEventNew()) return;
+                    this.snackBar.open('Document submitted.', undefined, { duration: 2000, panelClass: 'snackBar' });
+                    this.loadDocument();
+                });
 
             ethNOS.on(
                 ethNOS.filters.DocumentSubmissionAmended(this.documentHash),
                 (documentHash, event) => {
-                // console.log('DocumentSubmissionAmended', documentHash, event);
-                if (!isEventNew()) return;
-                this.snackBar.open('Document submission amended.', undefined, { duration: 2000, panelClass: 'snackBar' });
-                this.loadDocument();
-            });
+                    // console.log('DocumentSubmissionAmended', documentHash, event);
+                    if (!isEventNew()) return;
+                    this.snackBar.open('Document submission amended.', undefined, { duration: 2000, panelClass: 'snackBar' });
+                    this.loadDocument();
+                });
 
             ethNOS.on(
                 ethNOS.filters.DocumentSubmissionDeleted(this.documentHash),
                 (documentHash, event) => {
-                // console.log('DocumentSubmissionDeleted', documentHash, event);
-                if (!isEventNew()) return;
-                this.snackBar.open('Document submission deleted.', undefined, { duration: 2000, panelClass: 'snackBar' });
-                this.loadDocument();
-            });
+                    // console.log('DocumentSubmissionDeleted', documentHash, event);
+                    if (!isEventNew()) return;
+                    this.snackBar.open('Document submission deleted.', undefined, { duration: 2000, panelClass: 'snackBar' });
+                    this.loadDocument();
+                });
 
             ethNOS.on(
                 ethNOS.filters.DocumentSigningFunded(this.documentHash),
                 (documentHash, amount, event) => {
-                // console.log('DocumentSigningFunded', documentHash, amount, event);
-                if (!isEventNew()) return;
-                this.snackBar.open(`Document signing funded (${ethers.utils.formatUnits(amount)} ETH).`, undefined, { duration: 2000, panelClass: 'snackBar' });
-                this.loadDocument();
-            });
+                    // console.log('DocumentSigningFunded', documentHash, amount, event);
+                    if (!isEventNew()) return;
+                    this.snackBar.open(`Document signing funded (${ethers.utils.formatUnits(amount)} ETH).`, undefined, { duration: 2000, panelClass: 'snackBar' });
+                    this.loadDocument();
+                });
 
             ethNOS.on(
                 ethNOS.filters.DocumentSigningBalanceWithdrawn(this.documentHash),
                 (documentHash, amount, event) => {
-                // console.log('DocumentSigningBalanceWithdrawn', documentHash, amount, event);
-                if (!isEventNew()) return;
-                this.snackBar.open(`Document signing balance withdrawn (${ethers.utils.formatUnits(amount)} ETH).`, undefined, { duration: 2000, panelClass: 'snackBar' });
-                this.loadDocument();
-            });
+                    // console.log('DocumentSigningBalanceWithdrawn', documentHash, amount, event);
+                    if (!isEventNew()) return;
+                    this.snackBar.open(`Document signing balance withdrawn (${ethers.utils.formatUnits(amount)} ETH).`, undefined, { duration: 2000, panelClass: 'snackBar' });
+                    this.loadDocument();
+                });
 
             ethNOS.on(
                 ethNOS.filters.DocumentSigned(this.documentHash),
                 (documentHash, signatory, event) => {
-                // console.log('DocumentSigned', documentHash, signatory, event);
-                if (!isEventNew()) return;
-                this.snackBar.open(`Document signed by ${signatory}.`, undefined, { duration: 2000, panelClass: 'snackBar' });
-                this.loadDocument();
-            });
+                    // console.log('DocumentSigned', documentHash, signatory, event);
+                    if (!isEventNew()) return;
+                    this.snackBar.open(`Document signed by ${signatory}.`, undefined, { duration: 2000, panelClass: 'snackBar' });
+                    this.loadDocument();
+                });
 
             ethNOS.on(
                 ethNOS.filters.DocumentSigningCharged(this.documentHash),
                 (documentHash, amount, event) => {
-                // console.log('DocumentSigningCharged', documentHash, amount, event);
-                if (!isEventNew()) return;
-                // not showing for now
-                // this.snackBar.open(`Document signing charged (${ethers.utils.formatUnits(amount)} ETH).`, undefined, { duration: 2000, panelClass: 'snackBar' });
-                this.loadDocument();
-            });
+                    // console.log('DocumentSigningCharged', documentHash, amount, event);
+                    if (!isEventNew()) return;
+                    // not showing for now
+                    // this.snackBar.open(`Document signing charged (${ethers.utils.formatUnits(amount)} ETH).`, undefined, { duration: 2000, panelClass: 'snackBar' });
+                    this.loadDocument();
+                });
 
             ethNOS.on(
                 ethNOS.filters.DocumentCertified(this.documentHash),
                 (documentHash, event) => {
-                // console.log('DocumentCertified', documentHash, event);
-                if (!isEventNew()) return;
-                this.snackBar.open('Document certified.', undefined, { duration: 2000, panelClass: 'snackBar' });
-                this.loadDocument();
-            });
+                    // console.log('DocumentCertified', documentHash, event);
+                    if (!isEventNew()) return;
+                    this.snackBar.open('Document certified.', undefined, { duration: 2000, panelClass: 'snackBar' });
+                    this.loadDocument();
+                });
 
             this.isBusy = false;
         }
@@ -249,11 +254,33 @@ export class DocumentDetailComponent implements OnInit {
         }
     }
 
+    addRequiredSignatory(event: MatChipInputEvent): void {
+        const value = (event.value || '').trim();
+
+        if (value) {
+            if (!ethers.utils.isAddress(value))
+                this.snackBar.open('Invalid address!', undefined, { duration: 2000, panelClass: ['snackBar', 'snackBarError'] });
+            else if (this.signatoriesToSubmit.indexOf(value) >= 0)
+                this.snackBar.open('Cannot add duplicate signatory!', undefined, { duration: 2000, panelClass: ['snackBar', 'snackBarError'] });
+            else
+                this.signatoriesToSubmit.push(value);
+        }
+
+        event.chipInput!.clear();
+    }
+
+    removeRequiredSignatory(signatoryToSubmit: string): void {
+        const index = this.signatoriesToSubmit.indexOf(signatoryToSubmit);
+
+        if (index >= 0)
+            this.signatoriesToSubmit.splice(index, 1);
+    }
+
     ngOnDestroy() {
         this.ethereumConnectionContextServiceSubscription.unsubscribe();
     }
 
-    private parseTimeStamp(ts: any) : Date | null {
+    private parseTimeStamp(ts: any): Date | null {
         return ts != 0
             ? new Date(ts * 1000)
             : null;
