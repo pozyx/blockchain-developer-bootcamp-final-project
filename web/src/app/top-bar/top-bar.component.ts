@@ -4,12 +4,7 @@ import { ethers } from 'ethers';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
 import { Mode as AddressOrHashMode } from '../address-or-hash/address-or-hash.component';
-
-// TODO: extract?
-interface ProviderRpcError extends Error {
-    code: number;
-    data?: unknown;
-}
+import { ProviderRpcError } from '../common-types';
 
 @Component({
     selector: 'app-top-bar',

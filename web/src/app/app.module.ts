@@ -12,12 +12,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialogModule } from '@angular/material/dialog';
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { DocumentInputComponent } from './document-input/document-input.component';
-import { DocumentDetailComponent } from './document-detail/document-detail.component';
+import { DocumentDetailComponent, SubmitDocumentConfirmationDialog } from './document-detail/document-detail.component';
 import { NotConnectedComponent } from './not-connected/not-connected.component';
 import { AddressOrHashComponent } from './address-or-hash/address-or-hash.component';
 
@@ -28,7 +29,8 @@ import { AddressOrHashComponent } from './address-or-hash/address-or-hash.compon
         DocumentInputComponent,
         DocumentDetailComponent,
         NotConnectedComponent,
-        AddressOrHashComponent
+        AddressOrHashComponent,
+        SubmitDocumentConfirmationDialog
     ],
     imports: [
         BrowserModule,
@@ -45,7 +47,8 @@ import { AddressOrHashComponent } from './address-or-hash/address-or-hash.compon
         MatProgressSpinnerModule,
         MatCardModule,
         MatTableModule,
-        MatChipsModule
+        MatChipsModule,
+        MatDialogModule
     ],
     providers: [],
     bootstrap: [AppComponent]

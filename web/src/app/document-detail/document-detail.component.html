@@ -117,8 +117,8 @@
                 *ngIf="certificationState === CertificationState.NotSubmitted">
                 <mat-card-content class="submit">
                     <mat-form-field class="signatories" appearance="outline" color="accent">
-                        <mat-label *ngIf="signatoriesToSubmit.length == 0 && !signatoriesChipList.focused">Click here to add required signatories...</mat-label>
-                        <mat-label *ngIf="signatoriesToSubmit.length > 0 || signatoriesChipList.focused">Required signatories</mat-label>
+                        <mat-label *ngIf="signatoriesToSubmit.length == 0">Click here to add required signatories...</mat-label>
+                        <mat-label *ngIf="signatoriesToSubmit.length > 0">Required signatories</mat-label>
                         <mat-chip-list #signatoriesChipList selectable="false" class="mat-chip-list-stacked">
                             <mat-chip *ngFor="let signatory of signatoriesToSubmit" (removed)="removeRequiredSignatory(signatory)">
                                 <app-address-or-hash [mode]="AddressOrHash.Address" [addressOrHash]="signatory">
@@ -134,8 +134,8 @@
                                 (matChipInputTokenEnd)="addRequiredSignatory($event)">
                         </mat-chip-list>
                     </mat-form-field>
-                    <!-- TODO: handler -->
-                    <button mat-flat-button color="accent" class="submit" matTooltip="Submit document">
+                    <button mat-flat-button color="accent" class="submit" matTooltip="Submit document"
+                        (click)="submitDocument()">
                         <mat-icon class="material-icons submit">published_with_changes</mat-icon>
                         Submit
                     </button>
