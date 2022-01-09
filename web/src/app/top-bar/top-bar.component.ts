@@ -5,6 +5,7 @@ import detectEthereumProvider from '@metamask/detect-provider';
 import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
 import { Mode as AddressOrHashMode } from '../address-or-hash/address-or-hash.component';
 import { ProviderRpcError } from '../common-types';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
     selector: 'app-top-bar',
@@ -41,7 +42,8 @@ export class TopBarComponent implements OnInit {
 
     constructor(
         private ethereumConnectionContextService: EthereumConnectionContextService,
-        private router: Router) {
+        private router: Router,
+        private snackBar: MatSnackBar) {
         this.router.events.subscribe((event: Event) => {
             if (event instanceof NavigationEnd) {
                 this.isInDocumentDetail = event.url.includes('document');
@@ -95,8 +97,8 @@ export class TopBarComponent implements OnInit {
                 // request already submitted, do nothing
             }
             else {
-                // TODO: handle
-                throw err;
+                console.log('Error', err);
+                this.snackBar.open(`Unexpected error`, undefined, { duration: 5000, panelClass: ['snackBar', 'snackBarError'] });
             }
         }
     }

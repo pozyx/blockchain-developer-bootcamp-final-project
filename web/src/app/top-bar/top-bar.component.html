@@ -5,6 +5,10 @@
             <a [routerLink]="['/']" class="header">
                 <span class="mat-headline">EthNOS</span>
             </a>
+            <a href="https://github.com/pozyx/blockchain-developer-bootcamp-final-project" class="header github"
+                target="_blank">
+                <img class="github" src="/assets/github-light.png">
+            </a>
             <span class="spacer"></span>
             <button *ngIf="isEthereumProviderPresent && !isEthereumProviderConnected && !isEthereumProviderActionNeeded"
                 mat-flat-button color="accent" (click)="connect()">
@@ -32,10 +36,9 @@
                 class="mat-subheading-1">
                 Switch your Ethereum wallet to Rinkeby (or local) testnet
             </span>
-            <div class="mat-subheading-1" *ngIf="isEthereumProviderConnected && isEthereumProviderConnectedToCompatibleNetwork">
-                <app-address-or-hash
-                    [mode]="AddressOrHash.Address"
-                    [addressOrHash]="selectedAddress!">
+            <div class="mat-subheading-1"
+                *ngIf="isEthereumProviderConnected && isEthereumProviderConnectedToCompatibleNetwork">
+                <app-address-or-hash [mode]="AddressOrHash.Address" [addressOrHash]="selectedAddress!">
                 </app-address-or-hash>
             </div>
         </mat-toolbar-row>

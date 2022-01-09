@@ -18,13 +18,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     //   - (see OpenGSN/SimpleUse, OpenGSN React app)
     // - UI: busy indicator for state change operations
     // - UI: verify document for state change operations
-    // - UI: web - link to github
-    // - (UI: review theme)
-    // - (UI: review all captions/descriptions)
     // - (UI: resolve ENS addresses)
-    // - (UI: fund on submit, amend/delete, show history, show orphaned signatories)
-    // - (UI: cleanup TODOs)
-    // - (UI: busy indicator on hashing document)
     // - (calculate and set post gas usage)
     // - (can required amount for etherless signing be calculated?)
     // - try clean run
@@ -33,14 +27,26 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     //    - (also Windows)
     // - deploy
     //   - smart contracts (Rinkeby)
+    //     - deployed address.txt
     //   - (verify and publish source code on etherscan)
     //   - web (hosting)
     // - prepare for submission
-    //   - amend and document design pattern decisions
-    //   - amend and document attack vectors protections
+    //   - amend and document design pattern decisions (at least 2, at last 1 lib or iface)
+    //     - open gsn derived
+    //     - access control
+    //     - inter contract execution???
+    //   - amend and document attack vectors protections (at least 2)
+    //     - specific compiler pragma
+    //     - require, assert, revert
+    //     - modifiers
+    //     - pull over push
     //   - amend/prepare README.md (use example project as template)
+    //     - add address
     //   - known issues:
     //     - event sometimes does not come (Rinkeby)
+    //   - possible improvements:
+    //     - fund on submit, amend/delete, show history, show orphaned signatories
+    //   - cleanup or move TODOs and notes
     //   - (certification state chart)
     //   - screencast
 
