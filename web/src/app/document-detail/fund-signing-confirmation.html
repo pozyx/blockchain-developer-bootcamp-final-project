@@ -1,0 +1,16 @@
+<h2 mat-dialog-title>
+    <span>Fund document signing</span>
+</h2>
+<mat-dialog-content class="mat-typography">
+    <p>Document signing will be funded by transferring ETH from your account.</p>
+    <p>Signatories will be able sign document without spending any ETH.</p>
+</mat-dialog-content>
+<mat-form-field color="accent" appearance="outline" class="amount">
+    <mat-label>Amount</mat-label>
+    <input matInput type="number" class="amount" placeholder="0" required [formControl]="amountFormControl">
+    <span matSuffix class="amountSuffix">ETH</span>
+</mat-form-field>
+<mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-button [disabled]="amountFormControl.invalid" (click)="setResult()">Fund</button>
+</mat-dialog-actions>

@@ -1,0 +1,19 @@
+mat-dialog-content {
+    max-width: 400px;
+}
+
+mat-icon {
+    transform: scale(2);
+    vertical-align: sub;
+    margin-right: 20px;
+}
+
+input.amount {
+    text-align: right;
+    -moz-appearance: textfield;
+}
+
+input.amount::-webkit-outer-spin-button,
+input.amount::-webkit-inner-spin-button {
+    display: none;
+}

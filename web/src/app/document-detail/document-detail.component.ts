@@ -1,9 +1,10 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
+import { FormControl, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
 import { Subscription } from 'rxjs';
 import { ethers } from 'ethers'
@@ -44,25 +45,47 @@ interface INetwork {
     address: string;
 }
 
-export interface DialogData {
-    signatories: string[];
-}
-
 @Component({
     selector: 'submit-document-confirmation',
     templateUrl: 'submit-document-confirmation.html',
-    styleUrls: ['./submit-document-confirmation.scss']
+    styleUrls: ['./confirmation.scss']
 })
 export class SubmitDocumentConfirmationDialog {
-    constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) { }
+    constructor(@Inject(MAT_DIALOG_DATA) public data: string[]) { }
 }
 
 @Component({
     selector: 'sign-document-confirmation',
     templateUrl: 'sign-document-confirmation.html',
-    styleUrls: ['./sign-document-confirmation.scss']
+    styleUrls: ['./confirmation.scss']
 })
 export class SignDocumentConfirmationDialog { }
+
+@Component({
+    selector: 'fund-signing-confirmation',
+    templateUrl: 'fund-signing-confirmation.html',
+    styleUrls: ['./confirmation.scss']
+})
+export class FundSigningConfirmationDialog {
+    constructor(
+        private dialogRef: MatDialogRef<FundSigningConfirmationDialog>,
+        @Inject(MAT_DIALOG_DATA) public data: number) { }
+
+    amountFormControl = new FormControl('', [Validators.required, Validators.min(0.000000000000000001)]);
+
+    setResult() {
+        this.dialogRef.close(this.amountFormControl.value);
+    }
+}
+
+@Component({
+    selector: 'withdraw-signing-balance-confirmation',
+    templateUrl: 'withdraw-signing-balance-confirmation.html',
+    styleUrls: ['./confirmation.scss']
+})
+export class WithdrawSigningBalanceConfirmationDialog {
+    constructor(@Inject(MAT_DIALOG_DATA) public data: string[]) { }
+}
 
 @Component({
     selector: 'app-document-detail',
@@ -75,8 +98,6 @@ export class DocumentDetailComponent implements OnInit {
 
     private ethereumConnectionContextServiceSubscription: Subscription;
 
-    private signingBalance: bigint | null = null;
-
     readonly signatoriesSeparatorKeysCodes = [ENTER, COMMA, SPACE] as const;
 
     CertificationState = CertificationState;
@@ -88,6 +109,7 @@ export class DocumentDetailComponent implements OnInit {
     submissionTime: Date | null = null;
     certificationTime: Date | null = null;
     signatories: SigningInfo[] = [];
+    signingBalance: bigint | null = null;
     formattedSigningBalance: string | null = null;
     supportsEtherlessSigning: boolean | null = null;
     selectedAddress: string | null = null;
@@ -308,7 +330,7 @@ export class DocumentDetailComponent implements OnInit {
     submitDocument(): void {
         this.dialog.open(
             SubmitDocumentConfirmationDialog,
-            { data: { signatories: this.signatoriesToSubmit } })
+            { data: this.signatoriesToSubmit })
             .afterClosed()
             .subscribe(async result => {
                 if (result) {
@@ -368,6 +390,70 @@ export class DocumentDetailComponent implements OnInit {
             });
     }
 
+    get canManageFunding(): boolean {
+        return this.submitter == this.selectedAddress &&
+            this.supportsEtherlessSigning! &&
+            (this.certificationState == CertificationState.CertificationPending || this.signingBalance! > 0);
+    }
+
+    fundSigning(): void {
+        this.dialog.open(
+            FundSigningConfirmationDialog)
+            .afterClosed()
+            .subscribe(async result => {
+                if (result) {
+                    try {
+                        // TODO: busy indication
+                        await this.ethNOS!.fundDocumentSigning(
+                            this.documentHash,
+                            { value: ethers.utils.parseUnits(result.toString())});
+
+                        this.showMessage('Document signing funding transaction sent.');
+                    }
+                    catch (err) {
+                        const errorCode = (err as ProviderRpcError).code;
+
+                        if (errorCode == 4001) {
+                            this.showMessage('Funding document signing rejected by user.');
+                        }
+                        //--
+                        // TODO: handle other errors?
+                        else {
+                            this.showMessage('Cannot fund document signing!', err);
+                        }
+                    }
+                }
+            });
+    }
+
+    withdrawSigningBalance(): void {
+        this.dialog.open(
+            WithdrawSigningBalanceConfirmationDialog,
+            { data: this.formattedSigningBalance })
+            .afterClosed()
+            .subscribe(async result => {
+                if (result) {
+                    try {
+                        // TODO: busy indication
+                        await this.ethNOS!.withdrawDocumentSigningBalance(this.documentHash);
+
+                        this.showMessage('Withdrawal of document signing balance transaction sent.');
+                    }
+                    catch (err) {
+                        const errorCode = (err as ProviderRpcError).code;
+
+                        if (errorCode == 4001) {
+                            this.showMessage('Withdrawal of document signing balance rejected by user.');
+                        }
+                        // TODO: handle other errors?
+                        else {
+                            this.showMessage('Cannot withdraw document signing balance!', err);
+                        }
+                    }
+                }
+            });
+    }
+
     ngOnDestroy() {
         this.ethereumConnectionContextServiceSubscription.unsubscribe();
     }
@@ -376,7 +462,7 @@ export class DocumentDetailComponent implements OnInit {
         message: string,
         err: unknown | null = null): void {
         if (err) {
-            console.log(`Error: ${message}`, err);
+            console.error(`Error: ${message}`, err);
             this.snackBar.open(`Error: ${message}`, undefined, { duration: 5000, panelClass: ['snackBar', 'snackBarError'] });
         }
         else {

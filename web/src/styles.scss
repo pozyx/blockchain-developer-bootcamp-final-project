@@ -10,9 +10,9 @@ $app-theme: mat-dark-theme($app-primary, $app-accent, $app-warn);
 @include angular-material-theme($app-theme);
 
 :root {
-  --color-primary: #{mat-color($app-primary)};
-  --color-accent: #{mat-color($app-accent)};
-  --color-warn: #{mat-color($app-warn)};
+    --color-primary: #{mat-color($app-primary)};
+    --color-accent: #{mat-color($app-accent)};
+    --color-warn: #{mat-color($app-warn)};
 }
 
 body {
@@ -57,4 +57,11 @@ mat-form-field.signatories .mat-form-field-wrapper {
 /* workaround: only works in global styles */
 mat-form-field.signatories .mat-chip-list-wrapper {
     margin-right: 5px;
+}
+
+/* workaround: only works in global styles */
+mat-form-field.amount div.mat-form-field-suffix {
+    align-self: center;
+    margin-top: 5px;
+    margin-left: 5px;
 }

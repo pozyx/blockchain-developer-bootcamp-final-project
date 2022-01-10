@@ -97,7 +97,7 @@ export class TopBarComponent implements OnInit {
                 // request already submitted, do nothing
             }
             else {
-                console.log('Error', err);
+                console.error('Error', err);
                 this.snackBar.open(`Unexpected error`, undefined, { duration: 5000, panelClass: ['snackBar', 'snackBarError'] });
             }
         }

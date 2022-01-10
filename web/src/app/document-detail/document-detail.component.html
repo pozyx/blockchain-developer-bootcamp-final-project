@@ -102,33 +102,24 @@
                         <mat-icon class="material-icons clock">schedule</mat-icon>
                         {{certificationTime | date:'medium'}}
                     </div>
-                    <div class="faded"
-                        *ngIf="supportsEtherlessSigning && (certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified)">
-                        <span>Signing balance:</span>
-                    </div>
-                    <div class="faded"
-                        *ngIf="supportsEtherlessSigning && (certificationState === CertificationState.CertificationPending || certificationState === CertificationState.Certified)">
-                        {{formattedSigningBalance}}
-                        ETH
-                    </div>
                 </mat-card-content>
             </mat-card>
-            <mat-card class="submit"
-                *ngIf="certificationState === CertificationState.NotSubmitted">
+            <mat-card class="submit" *ngIf="certificationState === CertificationState.NotSubmitted">
                 <mat-card-content class="submit">
                     <mat-form-field class="signatories" appearance="outline" color="accent">
-                        <mat-label *ngIf="signatoriesToSubmit.length == 0">Click here to add required signatories...</mat-label>
+                        <mat-label *ngIf="signatoriesToSubmit.length == 0">Click here to add required signatories...
+                        </mat-label>
                         <mat-label *ngIf="signatoriesToSubmit.length > 0">Required signatories</mat-label>
                         <mat-chip-list #signatoriesChipList selectable="false" class="mat-chip-list-stacked">
-                            <mat-chip *ngFor="let signatory of signatoriesToSubmit" (removed)="removeRequiredSignatory(signatory)">
+                            <mat-chip *ngFor="let signatory of signatoriesToSubmit"
+                                (removed)="removeRequiredSignatory(signatory)">
                                 <app-address-or-hash [mode]="AddressOrHash.Address" [addressOrHash]="signatory">
                                 </app-address-or-hash>
                                 <button matChipRemove>
                                     <mat-icon>cancel</mat-icon>
                                 </button>
                             </mat-chip>
-                            <input placeholder="Enter address..."
-                                [matChipInputFor]="signatoriesChipList"
+                            <input placeholder="Enter address..." [matChipInputFor]="signatoriesChipList"
                                 [matChipInputAddOnBlur]="true"
                                 [matChipInputSeparatorKeyCodes]="signatoriesSeparatorKeysCodes"
                                 (matChipInputTokenEnd)="addRequiredSignatory($event)">
@@ -150,6 +141,35 @@
                         (click)="signDocument()">
                         <mat-icon class="material-icons submit">edit</mat-icon>
                         Sign
+                    </button>
+                </mat-card-content>
+            </mat-card>
+            <mat-card class="fund" *ngIf="canManageFunding">
+                <mat-card-content class="fund">
+                    <div class="fundDescription">
+                        Manage etherless signing.
+                    </div>
+                    <div class="fundDescription" *ngIf="certificationState === CertificationState.CertificationPending">
+                        Signatories can sign document without spending any ETH. Fund document for signing to allow
+                        etherless signing.
+                    </div>
+                    <div class="faded balanceLabel">
+                        Signing balance:
+                    </div>
+                    <div class="balance">
+                        {{formattedSigningBalance}}
+                        ETH
+                    </div>
+                    <button mat-flat-button color="accent" class="fund" matTooltip="Fund signing of the document"
+                        *ngIf="certificationState === CertificationState.CertificationPending"
+                        [ngClass]="{'span2columns': signingBalance! <= 0}" (click)="fundSigning()">
+                        Fund signing
+                    </button>
+                    <button mat-flat-button color="accent" class="withdraw"
+                        matTooltip="Withdraw document signing balance" *ngIf="signingBalance! > 0"
+                        [ngClass]="{'span2columns': certificationState != CertificationState.CertificationPending}"
+                        (click)="withdrawSigningBalance()">
+                        Withdraw balance
                     </button>
                 </mat-card-content>
             </mat-card>

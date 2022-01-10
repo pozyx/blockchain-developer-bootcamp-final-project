@@ -1,0 +1,10 @@
+<h2 mat-dialog-title>
+    <span>Withdraw document signing balance</span>
+</h2>
+<mat-dialog-content class="mat-typography">
+    <p>Signing balance {{data}} ETH for etherless signing of the document will be withdrawn to you.</p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-button [mat-dialog-close]="true" cdkFocusInitial>Withdraw</button>
+</mat-dialog-actions>

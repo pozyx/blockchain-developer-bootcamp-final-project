@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,9 +19,15 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { DocumentInputComponent } from './document-input/document-input.component';
-import { DocumentDetailComponent, SubmitDocumentConfirmationDialog, SignDocumentConfirmationDialog } from './document-detail/document-detail.component';
 import { NotConnectedComponent } from './not-connected/not-connected.component';
 import { AddressOrHashComponent } from './address-or-hash/address-or-hash.component';
+import {
+    DocumentDetailComponent,
+    SubmitDocumentConfirmationDialog,
+    SignDocumentConfirmationDialog,
+    FundSigningConfirmationDialog,
+    WithdrawSigningBalanceConfirmationDialog }
+    from './document-detail/document-detail.component';
 
 @NgModule({
     declarations: [
@@ -31,12 +38,16 @@ import { AddressOrHashComponent } from './address-or-hash/address-or-hash.compon
         NotConnectedComponent,
         AddressOrHashComponent,
         SubmitDocumentConfirmationDialog,
-        SignDocumentConfirmationDialog
+        SignDocumentConfirmationDialog,
+        FundSigningConfirmationDialog,
+        WithdrawSigningBalanceConfirmationDialog
     ],
     imports: [
         BrowserModule,
         AppRoutingModule,
         BrowserAnimationsModule,
+        FormsModule,
+        ReactiveFormsModule,
         NgxFileDropModule,
         MatToolbarModule,
         MatFormFieldModule,
