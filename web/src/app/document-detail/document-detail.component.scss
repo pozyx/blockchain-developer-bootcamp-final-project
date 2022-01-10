@@ -77,6 +77,7 @@ mat-card.fund {
 }
 
 mat-card-content.status,
+mat-card-content.sign,
 mat-card-content.fund {
     display: grid;
     grid-gap: 5px;
@@ -139,6 +140,7 @@ mat-form-field.signatories {
 
 button.submit,
 button.sign,
+button.signEtherless,
 button.fund,
 button.withdraw {
     display: block;
@@ -155,7 +157,8 @@ mat-form-field.signatories input.mat-chip-input {
     margin: 10px;
 }
 
-.fundDescription {
+.fundDescription,
+.signDescription {
     grid-column: span 2;
 }
 

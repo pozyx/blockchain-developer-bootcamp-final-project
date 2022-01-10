@@ -133,14 +133,21 @@
                 </mat-card-content>
             </mat-card>
             <mat-card class="sign" *ngIf="isRequiredToSign">
-                <mat-card-content class="sign>">
+                <mat-card-content class="sign">
                     <div class="signDescription">
                         Your signature is required for the certification.
                     </div>
                     <button mat-flat-button color="accent" class="sign" matTooltip="Sign document"
-                        (click)="signDocument()">
+                        [ngClass]="{'span2columns': signingBalance! <= 0}"
+                        (click)="signDocument(false)">
                         <mat-icon class="material-icons submit">edit</mat-icon>
                         Sign
+                    </button>
+                    <button mat-flat-button color="accent" class="signEtherless"
+                        matTooltip="Sign document without spending any ETH" *ngIf="signingBalance! > 0"
+                        (click)="signDocument(true)">
+                        <mat-icon class="material-icons submit">edit</mat-icon>
+                        Sign for free
                     </button>
                 </mat-card-content>
             </mat-card>

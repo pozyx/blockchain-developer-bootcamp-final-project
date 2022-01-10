@@ -59,7 +59,9 @@ export class SubmitDocumentConfirmationDialog {
     templateUrl: 'sign-document-confirmation.html',
     styleUrls: ['./confirmation.scss']
 })
-export class SignDocumentConfirmationDialog { }
+export class SignDocumentConfirmationDialog {
+    constructor(@Inject(MAT_DIALOG_DATA) public data: boolean) { }
+}
 
 @Component({
     selector: 'fund-signing-confirmation',
@@ -364,14 +366,21 @@ export class DocumentDetailComponent implements OnInit {
                 s.signTime == null);
     }
 
-    signDocument(): void {
-        this.dialog.open(SignDocumentConfirmationDialog)
+    signDocument(etherless: boolean): void {
+        this.dialog.open(
+            SignDocumentConfirmationDialog,
+            { data: etherless })
             .afterClosed()
             .subscribe(async result => {
                 if (result) {
                     try {
-                        // TODO: busy indication
-                        await this.ethNOS!.signDocument(this.documentHash);
+                        if (!etherless) {
+                            // TODO: busy indication
+                            await this.ethNOS!.signDocument(this.documentHash);
+                        }
+                        else {
+                            // TODO:
+                        }
 
                         this.showMessage('Document signing transaction sent.');
                     }

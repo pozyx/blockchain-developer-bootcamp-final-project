@@ -4,6 +4,7 @@
 </h2>
 <mat-dialog-content class="mat-typography">
     <p>Document will be signed by your account.</p>
+    <p *ngIf="data">Signing is pre-funded, you will not spend any ETH.</p>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
     <button mat-button mat-dialog-close>Cancel</button>
