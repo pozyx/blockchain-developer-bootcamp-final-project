@@ -13,13 +13,20 @@ import "./EthNOSPaymaster.sol";
  */
 contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
-    // - UI: etherless sign
-    //   - (see OpenGSN/SimpleUse, OpenGSN React app)
+    // - use out of process local GSN
     // - UI: busy indicator for state change operations
-    // - UI: verify document for state change operations
+    //   - wait();
+    //   - https://docs.ethers.io/v5/api/contract/contract/
+    //   - https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse
+    //   - https://docs.ethers.io/v5/api/providers/types/#providers-TransactionReceipt
+    //   - https://blog.ricmoo.com/highlights-ethers-js-may-2021-2826e858277d
+    // - UI: verify document presence for state change operations
+    // - Sometimes withdrawing: Error: insufficient funds for intrinsic transaction cost
+    //   - contract accounting shows more eth than it is on paymaster.
     // - (UI: resolve ENS addresses)
     // - (calculate and set post gas usage)
     // - (can required amount for etherless signing be calculated?)
+    // - (update packages?)
     // - try clean run
     //    - tests
     //    - web
@@ -43,6 +50,9 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     //     - add address
     //   - known issues:
     //     - event sometimes does not come (Rinkeby)
+    //     - issue in Chrome: if navigated too quickly after browser start, it will not be able to connect to MetaMask until refresh
+    //     - harmless error on etherless sign: https://forum.opengsn.org/t/metamask-rpc-error-already-known/93/2
+    //     - etherless signing sometimes asks for signing twice
     //   - possible improvements:
     //     - fund on submit, amend/delete, show history, show orphaned signatories
     //   - cleanup or move TODOs and notes
@@ -65,7 +75,6 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     //   - npm install -g @angular/cli
     // - manual wallet funding:
     //   - web3.eth.sendTransaction({ from: accounts[0], to: "0xBa36436982A4EEBDC5e322E4a492DE7fE064b918", value: web3.utils.toWei("1") })
-    // - issue in Chrome: if navigated too quickly after browser start, it will not be able to connect to MetaMask until refresh
     // - manual submit
     //   - yarn start
     //   - ethNOS = await EthNOS.deployed();

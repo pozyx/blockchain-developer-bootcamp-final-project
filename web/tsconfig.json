@@ -24,7 +24,21 @@
         ],
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "paths": {
+            "crypto": ["./node_modules/crypto-browserify"],
+            "stream": ["./node_modules/stream-browserify"],
+            "assert": ["./node_modules/assert"],
+            "https": ["./node_modules/https-browserify"],
+            "http": ["./node_modules/stream-http"],
+            "path": ["./node_modules/path-browserify"],
+            "zlib": ["./node_modules/browserify-zlib"],
+            "os": ["./node_modules/os-browserify"],
+            "fs": ["./node_modules/browserify-fs"],
+            "process": ["./node_modules/process/browser"],
+            "@opengsn/provider": ["./node_modules/@opengsn/provider"]
+        },
+        "skipLibCheck": true
     },
     "angularCompilerOptions": {
         "enableI18nLegacyMessageIdFormat": false,

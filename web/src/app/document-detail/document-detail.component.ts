@@ -7,7 +7,8 @@ import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
 import { Subscription } from 'rxjs';
-import { ethers } from 'ethers'
+import { ethers } from 'ethers';
+import { RelayProvider } from '@opengsn/provider/dist';
 import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
 import { Mode as AddressOrHashMode } from '../address-or-hash/address-or-hash.component';
 import { ProviderRpcError } from '../common-types';
@@ -113,12 +114,13 @@ export class DocumentDetailComponent implements OnInit {
     signatories: SigningInfo[] = [];
     signingBalance: bigint | null = null;
     formattedSigningBalance: string | null = null;
-    supportsEtherlessSigning: boolean | null = null;
-    selectedAddress: string | null = null;
+    private supportsEtherlessSigning: boolean | null = null;
+    private selectedAddress: string | null = null;
 
     signatoriesToSubmit: string[] = [];
 
-    ethNOS: ethers.Contract | null = null;
+    private ethNOS: ethers.Contract | null = null;
+    private paymasterContractAddress: string | null = null;
     isBusy: boolean = false;
 
     constructor(
@@ -159,14 +161,14 @@ export class DocumentDetailComponent implements OnInit {
             // console.log('contractAddress', contractAddress);
 
             if (this.ethNOS != null) this.ethNOS.removeAllListeners();
-            this.ethNOS = new ethers.Contract(
+            this.ethNOS = await new ethers.Contract(
                 contractAddress,
                 EthNOS.abi,
                 this.ethereumConnectionContextService.web3Signer!);
 
-            const paymasterContractAddress = await this.ethNOS.ethNOSPaymaster();
-            // console.log('paymasterContractAddress', paymasterContractAddress);
-            this.supportsEtherlessSigning = paymasterContractAddress != ethers.constants.AddressZero;
+            this.paymasterContractAddress = await this.ethNOS.ethNOSPaymaster() as string;
+            // console.log('paymasterContractAddress', this.paymasterContractAddress);
+            this.supportsEtherlessSigning = this.paymasterContractAddress != ethers.constants.AddressZero;
 
             const verifyDocumentResult = await this.ethNOS.verifyDocument(this.documentHash);
             // console.log(verifyDocumentResult);
@@ -379,7 +381,27 @@ export class DocumentDetailComponent implements OnInit {
                             await this.ethNOS!.signDocument(this.documentHash);
                         }
                         else {
-                            // TODO:
+                            const providerForGSNCalls = new ethers.providers.Web3Provider(
+                                await(
+                                    await RelayProvider.newProvider({
+                                        provider: this.ethereumConnectionContextService.web3Provider!.provider as any,
+                                        config: {
+                                            paymasterAddress: this.paymasterContractAddress!,
+                                            // gasPrice:  20000000000   // 20 Gwei  TODO: needed?
+                                        }
+                                    }))
+                                    .init() as any);
+                            await providerForGSNCalls.ready;
+
+                            const ethNOSForGSNCalls = await new ethers.Contract(
+                                this.ethNOS!.address,
+                                EthNOS.abi,
+                                providerForGSNCalls.getSigner(
+                                    this.selectedAddress!));
+
+                            const transaction = await ethNOSForGSNCalls.signDocument(this.documentHash);
+                            // TODO: busy indication (or wait())
+                            // await providerForGSNCalls.waitForTransaction(transaction.hash);
                         }
 
                         this.showMessage('Document signing transaction sent.');
