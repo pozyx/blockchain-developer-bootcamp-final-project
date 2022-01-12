@@ -1,5 +1,6 @@
 # Truffle
 build
+!build/contracts/EthNOS.json
 
 # Logs
 logs
