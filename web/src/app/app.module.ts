@@ -26,7 +26,8 @@ import {
     SubmitDocumentConfirmationDialog,
     SignDocumentConfirmationDialog,
     FundSigningConfirmationDialog,
-    WithdrawSigningBalanceConfirmationDialog }
+    WithdrawSigningBalanceConfirmationDialog,
+    WaitForTransactionDialog }
     from './document-detail/document-detail.component';
 
 @NgModule({
@@ -40,7 +41,8 @@ import {
         SubmitDocumentConfirmationDialog,
         SignDocumentConfirmationDialog,
         FundSigningConfirmationDialog,
-        WithdrawSigningBalanceConfirmationDialog
+        WithdrawSigningBalanceConfirmationDialog,
+        WaitForTransactionDialog
     ],
     imports: [
         BrowserModule,

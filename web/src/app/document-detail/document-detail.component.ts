@@ -47,27 +47,27 @@ interface INetwork {
 }
 
 @Component({
-    selector: 'submit-document-confirmation',
-    templateUrl: 'submit-document-confirmation.html',
-    styleUrls: ['./confirmation.scss']
+    selector: 'submit-document-confirmation.dialog',
+    templateUrl: 'submit-document-confirmation.dialog.html',
+    styleUrls: ['./dialog.scss']
 })
 export class SubmitDocumentConfirmationDialog {
     constructor(@Inject(MAT_DIALOG_DATA) public data: string[]) { }
 }
 
 @Component({
-    selector: 'sign-document-confirmation',
-    templateUrl: 'sign-document-confirmation.html',
-    styleUrls: ['./confirmation.scss']
+    selector: 'sign-document-confirmation.dialog',
+    templateUrl: 'sign-document-confirmation.dialog.html',
+    styleUrls: ['./dialog.scss']
 })
 export class SignDocumentConfirmationDialog {
     constructor(@Inject(MAT_DIALOG_DATA) public data: boolean) { }
 }
 
 @Component({
-    selector: 'fund-signing-confirmation',
-    templateUrl: 'fund-signing-confirmation.html',
-    styleUrls: ['./confirmation.scss']
+    selector: 'fund-signing-confirmation.dialog',
+    templateUrl: 'fund-signing-confirmation.dialog.html',
+    styleUrls: ['./dialog.scss']
 })
 export class FundSigningConfirmationDialog {
     constructor(
@@ -82,12 +82,20 @@ export class FundSigningConfirmationDialog {
 }
 
 @Component({
-    selector: 'withdraw-signing-balance-confirmation',
-    templateUrl: 'withdraw-signing-balance-confirmation.html',
-    styleUrls: ['./confirmation.scss']
+    selector: 'withdraw-signing-balance-confirmation.dialog',
+    templateUrl: 'withdraw-signing-balance-confirmation.dialog.html',
+    styleUrls: ['./dialog.scss']
 })
 export class WithdrawSigningBalanceConfirmationDialog {
     constructor(@Inject(MAT_DIALOG_DATA) public data: string[]) { }
+}
+
+@Component({
+    selector: 'wait-for-transaction.dialog',
+    templateUrl: 'wait-for-transaction.dialog.html',
+    styleUrls: ['./dialog.scss']
+})
+export class WaitForTransactionDialog {
 }
 
 @Component({
