@@ -7,6 +7,6 @@
     <p *ngIf="data">Signing is pre-funded, you will not spend any ETH.</p>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close>Cancel</button>
-    <button mat-button [mat-dialog-close]="true" cdkFocusInitial>Sign</button>
+    <button mat-flat-button mat-dialog-close>Cancel</button>
+    <button mat-flat-button color="accent" [mat-dialog-close]="true" cdkFocusInitial>Sign</button>
 </mat-dialog-actions>

@@ -13,16 +13,20 @@ import "./EthNOSPaymaster.sol";
  */
 contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
-    // - use out of process local GSN
     // - UI: busy indicator for state change operations
     //   - wait();
     //   - https://docs.ethers.io/v5/api/contract/contract/
     //   - https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse
     //   - https://docs.ethers.io/v5/api/providers/types/#providers-TransactionReceipt
     //   - https://blog.ricmoo.com/highlights-ethers-js-may-2021-2826e858277d
+    // * start-with-gsn does not work - gsn exits early
+    //   - extract GsnTestEnvironment.startGsn to separate js script
+    //      - run the script after ganache, before migrate
+    //      - in migrate, use forwarder/relayer addresses from step above (through env variables or filesystem)
+    //      - script must be kept running, migrate must wait for initialization
     // - UI: verify document presence for state change operations
     // - Sometimes withdrawing: Error: insufficient funds for intrinsic transaction cost
-    //   - contract accounting shows more eth than it is on paymaster.
+    //   - contract accounting shows more eth than it is on paymaster
     // - (UI: resolve ENS addresses)
     // - (calculate and set post gas usage)
     // - (can required amount for etherless signing be calculated?)
@@ -35,7 +39,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     //   - smart contracts (Rinkeby)
     //     - deployed address.txt
     //   - (verify and publish source code on etherscan)
-    //   - web (hosting)
+    //   * web (hosting)
     // - prepare for submission
     //   - amend and document design pattern decisions (at least 2, at last 1 lib or iface)
     //     - open gsn derived
@@ -49,15 +53,16 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     //   - amend/prepare README.md (use example project as template)
     //     - add address
     //   - known issues:
-    //     - event sometimes does not come (Rinkeby)
     //     - issue in Chrome: if navigated too quickly after browser start, it will not be able to connect to MetaMask until refresh
     //     - harmless error on etherless sign: https://forum.opengsn.org/t/metamask-rpc-error-already-known/93/2
-    //     - etherless signing sometimes asks for signing twice
+    //     - etherless signing sometimes asks for signing twice (when confirmed too quickly?)
     //   - possible improvements:
-    //     - fund on submit, amend/delete, show history, show orphaned signatories
+    //     - UI: fund on submit, amend/delete, show history, show orphaned signatories
     //   - cleanup or move TODOs and notes
     //   - (certification state chart)
     //   - screencast
+    //     - plan
+    //     - make
     //   - finish course content
 
     // TODO: notes
@@ -73,25 +78,6 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     //   - npm install -g yarn
     //   - npm install -g truffle
     //   - npm install -g @angular/cli
-    // - manual wallet funding:
-    //   - web3.eth.sendTransaction({ from: accounts[0], to: "0xBa36436982A4EEBDC5e322E4a492DE7fE064b918", value: web3.utils.toWei("1") })
-    // - manual submit
-    //   - yarn start
-    //   - ethNOS = await EthNOS.deployed();
-    //   - not submitted:
-    //     http://localhost:4200/document/0x7770cebd8da24269f3972c7d2cc4602d24695a4cfda1a5592e2495bbce1ba0fc
-    //   - pending:
-    //     http://localhost:4200/document/0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457
-    //     ethNOS.submitDocument('0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457',[accounts[1], accounts[2], accounts[3], accounts[4]]);
-    //     ethNOS.signDocument('0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457', { from: accounts[1] });
-    //     ethNOS.signDocument('0x4ac60fd001ee7fec40ab71fc404b847103732452179375294d0e0e23b8be0457', { from: accounts[2] });
-    //   - certified
-    //     http://localhost:4200/document/0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9
-    //     ethNOS.submitDocument('0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9',[accounts[1], accounts[2], accounts[3], accounts[4]]);
-    //     ethNOS.signDocument('0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9', { from: accounts[1] });
-    //     ethNOS.signDocument('0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9', { from: accounts[2] });
-    //     ethNOS.signDocument('0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9', { from: accounts[3] });
-    //     ethNOS.signDocument('0x2e936c99cba86a645b7bcb4fb194f9c67ff92021bb533bfdb3329719e7d282a9', { from: accounts[4] });
 
     /// Certification state of document.
     enum CertificationState {

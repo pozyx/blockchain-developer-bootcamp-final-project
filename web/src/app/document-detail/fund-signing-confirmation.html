@@ -11,6 +11,6 @@
     <span matSuffix class="amountSuffix">ETH</span>
 </mat-form-field>
 <mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close>Cancel</button>
-    <button mat-button [disabled]="amountFormControl.invalid" (click)="setResult()">Fund</button>
+    <button mat-flat-button mat-dialog-close>Cancel</button>
+    <button mat-flat-button color="accent" [disabled]="amountFormControl.invalid" (click)="setResult()">Fund</button>
 </mat-dialog-actions>
