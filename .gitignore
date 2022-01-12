@@ -1,5 +1,7 @@
 # Truffle
-build
+build/*
+!build/contracts
+build/contracts/*
 !build/contracts/EthNOS.json
 
 # Logs

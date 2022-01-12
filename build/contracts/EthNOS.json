@@ -38007,8 +38007,8 @@
         }
       },
       "links": {},
-      "address": "0x626d0e7D1C2cFa34f54b39637A286e767A1c8623",
-      "transactionHash": "0xc360df51e094c933db8f22d2e3f2e971803a59140fd46e9fe13b20aa3de3cd57"
+      "address": "0x8cba5C098Fc0017644eE7465F0E2014b71339032",
+      "transactionHash": "0x192cc371c7b852665ea3d938d287793aa7a930c98fe672957a9457f192927a98"
     },
     "1641886727735": {
       "events": {},
@@ -38018,7 +38018,7 @@
     }
   },
   "schemaVersion": "3.4.3",
-  "updatedAt": "2022-01-12T22:07:19.807Z",
+  "updatedAt": "2022-01-12T22:23:46.077Z",
   "networkType": "ethereum",
   "devdoc": {
     "author": "Martin Pozor",
