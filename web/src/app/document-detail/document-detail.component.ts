@@ -90,12 +90,25 @@ export class WithdrawSigningBalanceConfirmationDialog {
     constructor(@Inject(MAT_DIALOG_DATA) public data: string[]) { }
 }
 
+class WaitForTransactionDialogStage {
+    private _transactionInitiated: boolean = false;
+
+    get transactionInitiated(): boolean {
+        return this._transactionInitiated;
+    }
+
+    initiateTransaction() {
+        this._transactionInitiated = true;
+    }
+}
+
 @Component({
     selector: 'wait-for-transaction.dialog',
     templateUrl: 'wait-for-transaction.dialog.html',
     styleUrls: ['./dialog.scss']
 })
 export class WaitForTransactionDialog {
+    constructor(@Inject(MAT_DIALOG_DATA) public data: WaitForTransactionDialogStage) { }
 }
 
 @Component({
@@ -104,7 +117,6 @@ export class WaitForTransactionDialog {
     styleUrls: ['./document-detail.component.scss']
 })
 export class DocumentDetailComponent implements OnInit {
-
     private static readonly considerEventNewWhenReceivedAfterMs: number = 1000;
 
     private ethereumConnectionContextServiceSubscription: Subscription;
@@ -144,7 +156,7 @@ export class DocumentDetailComponent implements OnInit {
             });
     }
 
-    ngOnInit(): void {
+    ngOnInit() {
         if (this.ethereumConnectionContextService.isEthereumConnectionReady)
             this.loadDocument();
     }
@@ -235,12 +247,12 @@ export class DocumentDetailComponent implements OnInit {
         }
     }
 
-    private subscribeToContractEvents(ethNOS: ethers.Contract): void {
+    private subscribeToContractEvents(ethNOS: ethers.Contract) {
         const eventsSubscriptionTime = new Date();
         const isEventNew = function (): boolean {
             const eventTime = new Date();
             return (eventTime.getTime() - eventsSubscriptionTime.getTime() >
-            DocumentDetailComponent.considerEventNewWhenReceivedAfterMs);
+                DocumentDetailComponent.considerEventNewWhenReceivedAfterMs);
         }
 
         ethNOS.on(
@@ -317,7 +329,7 @@ export class DocumentDetailComponent implements OnInit {
             });
     }
 
-    addRequiredSignatory(event: MatChipInputEvent): void {
+    addRequiredSignatory(event: MatChipInputEvent) {
         const value = (event.value || '').trim();
 
         if (value) {
@@ -332,41 +344,17 @@ export class DocumentDetailComponent implements OnInit {
         event.chipInput!.clear();
     }
 
-    removeRequiredSignatory(signatoryToSubmit: string): void {
+    removeRequiredSignatory(signatoryToSubmit: string) {
         const index = this.signatoriesToSubmit.indexOf(signatoryToSubmit);
 
         if (index >= 0)
             this.signatoriesToSubmit.splice(index, 1);
     }
 
-    submitDocument(): void {
-        this.dialog.open(
-            SubmitDocumentConfirmationDialog,
-            { data: this.signatoriesToSubmit })
-            .afterClosed()
-            .subscribe(async result => {
-                if (result) {
-                    try {
-                        // TODO: busy indication
-                        await this.ethNOS!.submitDocument(
-                            this.documentHash,
-                            this.signatoriesToSubmit);
-
-                        this.showMessage('Document submission transaction sent.');
-                    }
-                    catch (err) {
-                        const errorCode = (err as ProviderRpcError).code;
-
-                        if (errorCode == 4001) {
-                            this.showMessage('Submission rejected by user.');
-                        }
-                        // TODO: handle other errors?
-                        else {
-                            this.showMessage('Cannot submit document!', err);
-                        }
-                    }
-                }
-            });
+    get canManageFunding(): boolean {
+        return this.submitter == this.selectedAddress &&
+            this.supportsEtherlessSigning! &&
+            (this.certificationState == CertificationState.CertificationPending || this.signingBalance! > 0);
     }
 
     get isRequiredToSign(): boolean {
@@ -376,121 +364,138 @@ export class DocumentDetailComponent implements OnInit {
                 s.signTime == null);
     }
 
-    signDocument(etherless: boolean): void {
+    submitDocument() {
+        this.dialog.open(
+            SubmitDocumentConfirmationDialog,
+            { data: this.signatoriesToSubmit })
+            .afterClosed()
+            .subscribe(async result => {
+                if (result) {
+                    this.executeTransaction(
+                        this.ethereumConnectionContextService.web3Provider!,
+                        async () => {
+                            return this.ethNOS!.submitDocument(
+                                this.documentHash,
+                                this.signatoriesToSubmit)
+                        },
+                        "Document submission");
+                }
+            });
+    }
+
+    signDocument(etherless: boolean) {
         this.dialog.open(
             SignDocumentConfirmationDialog,
             { data: etherless })
             .afterClosed()
             .subscribe(async result => {
                 if (result) {
-                    try {
-                        if (!etherless) {
-                            // TODO: busy indication
-                            await this.ethNOS!.signDocument(this.documentHash);
-                        }
-                        else {
-                            const providerForGSNCalls = new ethers.providers.Web3Provider(
-                                await(
-                                    await RelayProvider.newProvider({
-                                        provider: this.ethereumConnectionContextService.web3Provider!.provider as any,
-                                        config: {
-                                            paymasterAddress: this.paymasterContractAddress!,
-                                            // gasPrice:  20000000000   // 20 Gwei  TODO: needed?
-                                        }
-                                    }))
-                                    .init() as any);
-                            await providerForGSNCalls.ready;
-
-                            const ethNOSForGSNCalls = await new ethers.Contract(
-                                this.ethNOS!.address,
-                                EthNOS.abi,
-                                providerForGSNCalls.getSigner(
-                                    this.selectedAddress!));
-
-                            const transaction = await ethNOSForGSNCalls.signDocument(this.documentHash);
-                            // TODO: busy indication (or wait())
-                            // await providerForGSNCalls.waitForTransaction(transaction.hash);
-                        }
-
-                        this.showMessage('Document signing transaction sent.');
+                    if (!etherless) {
+                        this.executeTransaction(
+                            this.ethereumConnectionContextService.web3Provider!,
+                            async () => {
+                                return this.ethNOS!.signDocument(this.documentHash);
+                            },
+                            "Document signing");
                     }
-                    catch (err) {
-                        const errorCode = (err as ProviderRpcError).code;
+                    else {
+                        const providerForGSNCalls = new ethers.providers.Web3Provider(
+                            await (
+                                await RelayProvider.newProvider({
+                                    provider: this.ethereumConnectionContextService.web3Provider!.provider as any,
+                                    config: {
+                                        paymasterAddress: this.paymasterContractAddress!,
+                                        // gasPrice:  20000000000   // 20 Gwei  TODO: needed?
+                                    }
+                                }))
+                                .init() as any);
 
-                        if (errorCode == 4001) {
-                            this.showMessage('Signing rejected by user.');
-                        }
-                        // TODO: handle other errors?
-                        else {
-                            this.showMessage('Cannot sign document!', err);
-                        }
+                        this.executeTransaction(
+                            providerForGSNCalls,
+                            async () => {
+                                await providerForGSNCalls.ready;
+
+                                const ethNOSForGSNCalls = await new ethers.Contract(
+                                    this.ethNOS!.address,
+                                    EthNOS.abi,
+                                    providerForGSNCalls.getSigner(
+                                        this.selectedAddress!));
+
+                                return ethNOSForGSNCalls.signDocument(this.documentHash);
+                            },
+                            "Document signing");
                     }
                 }
             });
     }
 
-    get canManageFunding(): boolean {
-        return this.submitter == this.selectedAddress &&
-            this.supportsEtherlessSigning! &&
-            (this.certificationState == CertificationState.CertificationPending || this.signingBalance! > 0);
-    }
-
-    fundSigning(): void {
+    fundSigning() {
         this.dialog.open(
             FundSigningConfirmationDialog)
             .afterClosed()
             .subscribe(async result => {
                 if (result) {
-                    try {
-                        // TODO: busy indication
-                        await this.ethNOS!.fundDocumentSigning(
-                            this.documentHash,
-                            { value: ethers.utils.parseUnits(result.toString())});
-
-                        this.showMessage('Document signing funding transaction sent.');
-                    }
-                    catch (err) {
-                        const errorCode = (err as ProviderRpcError).code;
-
-                        if (errorCode == 4001) {
-                            this.showMessage('Funding document signing rejected by user.');
-                        }
-                        //--
-                        // TODO: handle other errors?
-                        else {
-                            this.showMessage('Cannot fund document signing!', err);
-                        }
-                    }
+                    this.executeTransaction(
+                        this.ethereumConnectionContextService.web3Provider!,
+                        async () => {
+                            return this.ethNOS!.fundDocumentSigning(
+                                this.documentHash,
+                                { value: ethers.utils.parseUnits(result.toString()) });
+                        },
+                        "Funding of document signing");
                 }
             });
     }
 
-    withdrawSigningBalance(): void {
+    withdrawSigningBalance() {
         this.dialog.open(
             WithdrawSigningBalanceConfirmationDialog,
             { data: this.formattedSigningBalance })
             .afterClosed()
             .subscribe(async result => {
                 if (result) {
-                    try {
-                        // TODO: busy indication
-                        await this.ethNOS!.withdrawDocumentSigningBalance(this.documentHash);
-
-                        this.showMessage('Withdrawal of document signing balance transaction sent.');
-                    }
-                    catch (err) {
-                        const errorCode = (err as ProviderRpcError).code;
-
-                        if (errorCode == 4001) {
-                            this.showMessage('Withdrawal of document signing balance rejected by user.');
-                        }
-                        // TODO: handle other errors?
-                        else {
-                            this.showMessage('Cannot withdraw document signing balance!', err);
-                        }
-                    }
+                    this.executeTransaction(
+                        this.ethereumConnectionContextService.web3Provider!,
+                        async () => {
+                            return this.ethNOS!.withdrawDocumentSigningBalance(this.documentHash);
+                        },
+                        "Withdrawal of document signing balance");
                 }
             });
+    }
+
+    private async executeTransaction(
+        provider: ethers.providers.Web3Provider,
+        contractCall: () => any,
+        contractCallDescription: string) {
+        let dialogStage = new WaitForTransactionDialogStage();
+
+        const waitDialog = this.dialog.open(
+            WaitForTransactionDialog,
+            {
+                disableClose: true,
+                data: dialogStage
+            });
+
+        try {
+            const transaction = await contractCall();
+            dialogStage.initiateTransaction();
+            await provider.waitForTransaction(transaction.hash);
+        }
+        catch (err) {
+            const errorCode = (err as ProviderRpcError).code;
+
+            if (errorCode == 4001) {
+                this.showMessage(`${contractCallDescription} rejected by user.`);
+            }
+            // TODO: handle other errors?
+            else {
+                this.showMessage(`${contractCallDescription} failed.`, err);
+            }
+        }
+        finally {
+            waitDialog.close();
+        }
     }
 
     ngOnDestroy() {
@@ -499,7 +504,7 @@ export class DocumentDetailComponent implements OnInit {
 
     private showMessage(
         message: string,
-        err: unknown | null = null): void {
+        err: unknown | null = null) {
         if (err) {
             console.error(`Error: ${message}`, err);
             this.snackBar.open(`Error: ${message}`, undefined, { duration: 5000, panelClass: ['snackBar', 'snackBarError'] });

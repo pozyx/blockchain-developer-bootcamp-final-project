@@ -17,3 +17,7 @@ input.amount::-webkit-outer-spin-button,
 input.amount::-webkit-inner-spin-button {
     display: none;
 }
+
+mat-spinner {
+    margin: 20px auto 0px auto;
+}

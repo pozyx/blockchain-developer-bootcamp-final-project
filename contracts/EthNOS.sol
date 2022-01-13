@@ -13,13 +13,7 @@ import "./EthNOSPaymaster.sol";
  */
 contract EthNOS is BaseRelayRecipient, Ownable {
     // TODO:
-    // - UI: busy indicator for state change operations
-    //   - wait();
-    //   - https://docs.ethers.io/v5/api/contract/contract/
-    //   - https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse
-    //   - https://docs.ethers.io/v5/api/providers/types/#providers-TransactionReceipt
-    //   - https://blog.ricmoo.com/highlights-ethers-js-may-2021-2826e858277d
-    // * start-with-gsn does not work - gsn exits early
+    // - start-with-gsn does not work - gsn exits early
     //   - extract GsnTestEnvironment.startGsn to separate js script
     //      - run the script after ganache, before migrate
     //      - in migrate, use forwarder/relayer addresses from step above (through env variables or filesystem)
@@ -30,16 +24,15 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     // - (UI: resolve ENS addresses)
     // - (calculate and set post gas usage)
     // - (can required amount for etherless signing be calculated?)
-    // - (update packages?)
+    // ? (update packages?)
     // - try clean run
     //    - tests
     //    - web
     //    - (also Windows)
-    // - deploy
-    //   - smart contracts (Rinkeby)
+    // ? deploy
+    //   - smart contracts (Rinkeby) - 0x52E3871602Aa8361405635E5dA2BE9b1CfBE7A77
     //     - deployed address.txt
-    //   - (verify and publish source code on etherscan)
-    //   * web (hosting)
+    //   ? web (hosting)
     // - prepare for submission
     //   - amend and document design pattern decisions (at least 2, at last 1 lib or iface)
     //     - open gsn derived

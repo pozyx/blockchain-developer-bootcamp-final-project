@@ -1,11 +1,9 @@
 <h2 mat-dialog-title>
-    <mat-icon class="material-icons">edit</mat-icon>
-    <span>Sign document</span>
+    <span *ngIf="!data.transactionInitiated">Preparing</span>
+    <span *ngIf="data.transactionInitiated">Waiting for confirmation</span>
 </h2>
 <mat-dialog-content class="mat-typography">
-    <p>Document will be signed by your account.</p>
+    <p *ngIf="!data.transactionInitiated">Check your Ethereum wallet to initiate transaction...</p>
+    <p *ngIf="data.transactionInitiated">Transaction has been initiated. Waiting for confirmation...</p>
+    <mat-spinner [diameter]="50" color="accent"></mat-spinner>
 </mat-dialog-content>
-<mat-dialog-actions align="end">
-    <button mat-flat-button mat-dialog-close>Cancel</button>
-    <button mat-flat-button color="accent" [mat-dialog-close]="true" cdkFocusInitial>Sign</button>
-</mat-dialog-actions>
