@@ -12,65 +12,6 @@ import "./EthNOSPaymaster.sol";
  * @dev Derives BaseRelayRecipient to allow GSN meta-transactions - see https://docs.opengsn.org/javascript-client/tutorial.html
  */
 contract EthNOS is BaseRelayRecipient, Ownable {
-    // TODO:
-    // - start-with-gsn does not work - gsn exits early
-    //   - extract GsnTestEnvironment.startGsn to separate js script
-    //      - run the script after ganache, before migrate
-    //      - in migrate, use forwarder/relayer addresses from step above (through env variables or filesystem)
-    //      - script must be kept running, migrate must wait for initialization
-    // - UI: verify document presence for state change operations
-    // - Sometimes withdrawing: Error: insufficient funds for intrinsic transaction cost
-    //   - contract accounting shows more eth than it is on paymaster
-    // - (UI: resolve ENS addresses)
-    // - (calculate and set post gas usage)
-    // - (can required amount for etherless signing be calculated?)
-    // - try clean run
-    //    - tests
-    //    - web
-    //    - (also Windows)
-    // ? deploy
-    //   - smart contracts (Rinkeby) - 0x52E3871602Aa8361405635E5dA2BE9b1CfBE7A77
-    //     - deployed address.txt
-    //   - web (hosting) - https://ethnos.surge.sh/
-    // - prepare for submission
-    //   - amend and document design pattern decisions (at least 2, at last 1 lib or iface)
-    //     - open gsn derived
-    //     - access control
-    //     - inter contract execution???
-    //   - amend and document attack vectors protections (at least 2)
-    //     - specific compiler pragma
-    //     - require, assert, revert
-    //     - modifiers
-    //     - pull over push
-    //   - amend/prepare README.md (use example project as template)
-    //     - add address
-    //   - known issues:
-    //     - issue in Chrome: if navigated too quickly after browser start, it will not be able to connect to MetaMask until refresh
-    //     - harmless error on etherless sign: https://forum.opengsn.org/t/metamask-rpc-error-already-known/93/2
-    //     - etherless signing sometimes asks for signing twice (when confirmed too quickly?)
-    //   - possible improvements:
-    //     - UI: fund on submit, amend/delete, show history, show orphaned signatories
-    //   - cleanup or move TODOs and notes
-    //   - (certification state chart)
-    //   - screencast
-    //     - plan
-    //     - make
-    //   - finish course content
-
-    // TODO: notes
-    // - use yarn (opengsn was not buildable in npm)
-    // - GSN worked on Rinkeby, not Ropsten
-    // - manual run:
-    //   - run Ganache: net=`date "+%j%H%M%S"` && ganache-cli --networkId $net --chainId $net -v
-    //   - run GSN: gsn start
-    //   - run Truffle: truffle console
-    // - clean run:
-    //   - install nvm
-    //   - install node (npm)
-    //   - npm install -g yarn
-    //   - npm install -g truffle
-    //   - npm install -g @angular/cli
-
     /// Certification state of document.
     enum CertificationState {
         /// Document was not submitted for certification.

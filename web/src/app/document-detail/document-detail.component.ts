@@ -404,8 +404,7 @@ export class DocumentDetailComponent implements OnInit {
                                 await RelayProvider.newProvider({
                                     provider: this.ethereumConnectionContextService.web3Provider!.provider as any,
                                     config: {
-                                        paymasterAddress: this.paymasterContractAddress!,
-                                        // gasPrice:  20000000000   // 20 Gwei  TODO: needed?
+                                        paymasterAddress: this.paymasterContractAddress!
                                     }
                                 }))
                                 .init() as any);

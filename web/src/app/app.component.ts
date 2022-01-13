@@ -12,7 +12,7 @@ export class AppComponent {
 
     private ethereumConnectionContextServiceSubscription: Subscription;
 
-    title = 'EthNOS';
+    title = 'ethNOS';
 
     isEthereumConnectionReady: boolean = false;
 

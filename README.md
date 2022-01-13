@@ -2,53 +2,89 @@
 
 *Final Project for ConsenSys Blockchain Developer Bootcamp 2021*
 
-## Motivation
+Jump to [Getting started](#getting-started)
 
-In real life, there are many situations when legal contract or agreement (paper or electronic document) has to be signed by multiple signatories in order to constitute a legal binding between them. Examples include employment agreements, mortgage agreements, rental contracts and many others.
+## About
+
+### Motivation
+
+In real life, there are many situations when legal contract or agreement (paper or electronic document) must be signed by multiple signatories to constitute a legal binding between them. Examples include employment agreements, mortgage agreements, rental contracts and many others.
 
 Historically these were paper documents certified by recognized authorities (such as notaries, solicitors or similar) with a responsibility of verifying identity of all required signatories, witnessing and certifying the act of signing and keeping ledger of all such acts for future legal disputes.
 
 Over time, electronic systems for signing documents by multiple parties started to be more widespread and legally recognized. However, there are disadvantages of such systems - providers are mostly proprietary / closed systems with centralized record keeping without permissionless way to verify validity of signed documents. Blockchain technology is ideal for this purpose as it allows to do all this on an immutable ledger which is always available for everyone to verify.
 
-## Overview
+### Overview
 
-ethNOS is a simple smart contract on Ethereum blockchain and a web front-end which allows to:
+ethNOS is a smart contract on Ethereum blockchain and a web front-end which allows to:
 - Submit document for signing by multiple parties (as required by submitter).
 - Sign document by required signatories specified in document submission.
-- Verify validity of document (document is deemed valid when signed by all required parties).
+- Verify validity of document (document is deemed certified when signed by all required parties).
 - Monitor real-time events of above state transitions for a given document.
 
-Document can also be submitted without requiring any signatories. In this case, document is recorded as immediately valid and verification is simple proof of document existence.
-  
+Document can also be submitted without requiring any signatories. In this case, document is recorded as immediately certified and this constitutes proof of the document existence.
+
 Following guarantees are enforced by cryptographic properties of blockchain:
-- Identity of required signatories is verified (signatory account holder performed the signing).
+- Identity of required signatories is verified (signatory account holder performs the signing).
 - Document validity is immutably recorded forever for everyone to verify.
 
-Smart contract stores only a hash of a document - only this is required for functionality and guarantees above. Persistence of the document body is out of scope.
+Smart contract stores only cryptographic hash of a document - only this is required for functionality and guarantees above. Persistence of the document body is out of scope.
 
-## Example workflow
+### Example workflow
 
 1. Submitter (e.g. mortgage broker) uploads a document (e.g. mortgage agreement) and specifies required signatories (e.g. accounts of lender representative and person taking the mortgage).
 2. Submitter asks all parties to sign the document. This is done by traditional means (e.g. email).
-3. Each signatory signs the document. (As the document persistence is out of scope of this project, document has to be re-uploaded for signing. Matching hash guarantees that document has not been modified.)
-4. Submitter and signatories (or others) can see the signing status and events as they happen.
+3. Each signatory signs the document. (As the document persistence is out of scope of this project, document must be re-uploaded for signing. Matching hash guarantees that document has not been modified.)
+4. Submitter and signatories (or anyone else) can see the certification status and events as they happen.
 5. Submitter, signatories or anyone else can verify document validity and see all available information (accounts of signatories, time of each signing, etc.) by uploading the document.
 
-Note: "Uploading document" in this context means only hashing the document on client side - document body is never uploaded / transferred from the user's device.
+Note: "Uploading document" in this context means only hashing the document on client side - document body is never uploaded / transferred from the user's device!
 
-## Additional features
+### "Etherless" signing
 
-- To avoid requiring signatories to spend ETH, they will be able to perform the signing as "etherless" transaction. In the above example (see Example workflow) it is not reasonable to expect that signatory (the person taking the mortgage) would be willing to pay just for signing the mortgage agreement, rather than that submitter (the mortgage broker) will bear the cost of this. This will be done using meta-transactions (OpenGSN or similar).
-- ENS addresses will be supported.
+- To avoid requiring signatories to spend ETH, they can perform the signing as etherless transaction. In the above example (see Example workflow) it is not reasonable to expect that signatory (the person taking the mortgage) would be willing to pay just for signing the mortgage agreement, rather than that submitter (the mortgage broker) will bear the cost of this.
+- Submitter can fund the signing of specific document and this enables signatories to sign the document "for free". This is done by leveraging [OpenGSN](https://opengsn.org/).
 
-## TBD
+## Getting started
 
-- Ability to amend existing submission of a document (such as adding / removing required signatories) by the submitter will be considered.
-- Possibility of submission with signing in one transaction (for cases when submitter is also a signatory) will be considered.
+### Run the app
 
-## Ideas for improvements (out of scope)
+Deployed web app location: [ethNOS.surge.sh](https://ethnos.surge.sh/)
 
+Supported networks are Rinkeby and localhost:8545.
+
+### Repository structure
+
+- [contracts](contracts)
+  - [EthNOS.sol](contracts/EthNOS.sol) - main contract
+  - [EthNOSPaymaster.sol](contracts/EthNOSPaymaster.sol) - GSN paymaster for above
+- [migrations](migrations), [test](test) - as per usual Truffle convention
+- [web](web) - web app front-end (Angular)
+
+## Other
+
+### Mandatory information (for Bootcamp)
+
+- [Final project checklist](final-project-checklist.txt)
+- [Design pattern decisions](design_pattern_decisions.md)
+- [Avoiding common attacks](avoiding_common_attacks.md)
+- [Address of the deployed contract](deployed_address.txt)
+- Public Ethereum account for certification: 0x6fBA66b8E73aEA05A9B050ba8Df2e14A1684fdF7
+
+### Ideas for future improvements
+
+- Support of [ENS](https://ens.domains/) addresses.
+- Ability to amend existing submission of a document (adding / removing required signatories), ability to delete (pending only) submission
+  by the submitter and ability to show history of such actions. This is implemented in contract (but not in web app). See comments in [EthNOS.sol](contracts/EthNOS.sol) for more information.
+- Ability to fund for etherless signing as part of the submission transaction. This is implemented in contract (but not in web app).
+- Estimate and suggest appropriate funding amount for etherless signing.
+- Ability to run arbitrary transaction (smart contract call, etc.) on document certification.
+- Persistence of the documents ([IPFS](https://ipfs.io/) / [FileCoin](https://filecoin.io/) or integration with traditional cloud services).
 - Built-in notification between participants (email / push) on document state changes.
-- Persistence of the documents (IPFS / FileCoin or integration with traditional cloud services).
-- Ability to run arbitrary transaction (smart contract call, etc.) on document verification.
-- Using oracle for getting current time (safer and more accurate than block.timestamp).
+
+### Known issues
+
+- Etherless signing sometimes yields to duplicated display of MetaMask confirmation dialog.
+- Etherless signing causes MetaMask error (it works ok, error is only visible in console). [Cause](https://forum.opengsn.org/t/metamask-rpc-error-already-known/93)
+- Chrome: If web app is navigated to too quickly after browser start-up, it will not be possible to connect it to MetaMask until page refresh.
+- If initial connect to MetaMask is ignored, page is refreshed and MetaMask connection is confirmed afterwards, app will not detect the connection.
