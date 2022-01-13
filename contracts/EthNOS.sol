@@ -31,7 +31,7 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     // ? deploy
     //   - smart contracts (Rinkeby) - 0x52E3871602Aa8361405635E5dA2BE9b1CfBE7A77
     //     - deployed address.txt
-    //   ? web (hosting)
+    //   - web (hosting) - https://ethnos.surge.sh/
     // - prepare for submission
     //   - amend and document design pattern decisions (at least 2, at last 1 lib or iface)
     //     - open gsn derived
