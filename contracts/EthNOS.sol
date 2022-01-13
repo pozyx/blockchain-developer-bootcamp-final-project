@@ -24,7 +24,6 @@ contract EthNOS is BaseRelayRecipient, Ownable {
     // - (UI: resolve ENS addresses)
     // - (calculate and set post gas usage)
     // - (can required amount for etherless signing be calculated?)
-    // ? (update packages?)
     // - try clean run
     //    - tests
     //    - web
