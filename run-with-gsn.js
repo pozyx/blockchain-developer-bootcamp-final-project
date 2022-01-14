@@ -20,7 +20,6 @@ For example: ${ownName} 'truffle migrate && truffle test'
     process.exit(2);
 }
 
-// TODO: or npx?
 let gsnCmd = 'gsn';
 let gsnArgs = ['start'];
 const cmd = process.argv[process.argv.length - 1];

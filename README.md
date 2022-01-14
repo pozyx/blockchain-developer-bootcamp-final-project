@@ -73,6 +73,7 @@ Supported networks are Rinkeby and localhost:8545.
 
 ### Ideas for future improvements
 
+- Currently, signatory is able to access document url directly and to sign the document without uploading it. Ideally, in this case, he should be asked to provide the document and only allowed to sign if the document matches the hash in url. This way he could not sign different document by mistake.
 - Support of [ENS](https://ens.domains/) addresses.
 - Ability to amend existing submission of a document (adding / removing required signatories), ability to delete (pending only) submission
   by the submitter and ability to show history of such actions. This is implemented in contract (but not in web app). See comments in [EthNOS.sol](contracts/EthNOS.sol) for more information.
@@ -84,6 +85,7 @@ Supported networks are Rinkeby and localhost:8545.
 
 ### Known issues
 
+- Accounting of balance for etherless signing is not fully consistent with balance kept in relay hub due to inherent indeterminism of precise transaction cost. To prevent balance mismatches which can cause unexpected errors of insufficient balance, this should be revisited and addressed (for example by calculating and setting gas used by `postRelayedCall` function of [EthNOSPaymaster](contracts/EthNOSPaymaster.sol)).
 - Etherless signing sometimes yields to duplicated display of MetaMask confirmation dialog.
 - Etherless signing causes MetaMask error (it works ok, error is only visible in console). [Cause](https://forum.opengsn.org/t/metamask-rpc-error-already-known/93)
 - Chrome: If web app is navigated to too quickly after browser start-up, it will not be possible to connect it to MetaMask until page refresh.
