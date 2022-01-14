@@ -1,5 +1,4 @@
 const ethers = require("ethers");
-const { GsnTestEnvironment } = require("@opengsn/cli/dist/GsnTestEnvironment");
 const EthNOS = artifacts.require("./EthNOS.sol");
 const EthNOSPaymaster = artifacts.require("./EthNOSPaymaster.sol");
 
@@ -21,9 +20,12 @@ module.exports = async function (deployer, network, accounts) {
         useGSN = true;
     }
     else if (network == "local" && process.env.USE_LOCAL_GSN == "true") {
-        const env = await GsnTestEnvironment.startGsn('localhost');
-        forwarder = env.contractsDeployment.forwarderAddress;
-        relayHub = env.contractsDeployment.relayHubAddress;
+        forwarder = process.env.GSN_FORWARDER;
+        relayHub = process.env.GSN_RELAY_HUB;
+
+        if (!forwarder || !relayHub)
+            throw 'GSN_FORWARDER / GSN_RELAY_HUB are not set - run with run-with-gsn';
+
         useGSN = true;
     }
     else if (network == "local") {
