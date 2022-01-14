@@ -7,7 +7,7 @@
         "build": "ng build",
         "watch": "ng build --watch --configuration development",
         "test": "ng test",
-        "deploy": "ng build && surge dist/ethNOS/ https://ethnos.surge.sh"
+        "deploy": "ng build && cp dist/ethNOS/index.html dist/ethNOS/200.html && surge dist/ethNOS/ https://ethnos.surge.sh"
     },
     "private": true,
     "dependencies": {
