@@ -3,6 +3,28 @@
         Document hash:
         <app-address-or-hash class="document" [mode]="AddressOrHash.Hash" [addressOrHash]="documentHash!">
         </app-address-or-hash>
+        Document:
+        <ngx-file-drop [directory]="false" [multiple]="false"
+            dropZoneClassName="" contentClassName="" [disabled]="openedFileName != null"
+            (onFileDrop)="handleDropFile($event)">
+            <ng-template ngx-file-drop-content-tmp>
+                <div class="select-file-container">
+                    <mat-form-field class="document-detail_document-input" appearance="outline"
+                        [ngClass]="{'mat-form-field-invalid': openedFileNameRequiredHighlight}">
+                        <mat-label>
+                            <span *ngIf="openedFileName == null">Browse or drop document here...</span>
+                            <span *ngIf="openedFileName != null">{{openedFileName}}</span>
+                        </mat-label>
+                        <input matInput disabled>
+                    </mat-form-field>
+                    <input #fileInput type="file" hidden (change)="handleSelectFile($event)">
+                    <button mat-flat-button color="accent" *ngIf="openedFileName == null" (click)="fileInput.click()">
+                        <mat-icon class="material-icons">attach_file</mat-icon>
+                        Browse...
+                    </button>
+                </div>
+            </ng-template>
+        </ngx-file-drop>
         <span class="spacer"></span>
         <button mat-flat-button color="accent" class="close" [routerLink]="['/']" matTooltip="Close document">
             <mat-icon class="material-icons close">close</mat-icon>

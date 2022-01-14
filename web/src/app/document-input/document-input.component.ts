@@ -1,7 +1,8 @@
-import { Component, OnInit, NgZone } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgxFileDropEntry, FileSystemFileEntry } from 'ngx-file-drop';
 import { ethers } from 'ethers'
+import { DocumentInputContextService } from '../document-input-context.service';
 
 @Component({
     selector: 'app-document-input',
@@ -12,7 +13,8 @@ export class DocumentInputComponent {
 
     constructor(
         private router: Router,
-        private ngZone: NgZone) { }
+        private ngZone: NgZone,
+        private documentInputContextService: DocumentInputContextService) { }
 
     handleSelectFile(event: Event) {
         let fileList = (event.currentTarget as HTMLInputElement).files;
@@ -36,13 +38,17 @@ export class DocumentInputComponent {
     }
 
     private selectFile(file: File) {
-        var reader = new FileReader();
-        var router = this.router;
+        const reader = new FileReader();
+        const router = this.router;
+        const documentInputContextService = this.documentInputContextService;
+
         reader.onload = function () {
-            var arrayBuffer = <ArrayBuffer>this.result;
+            const arrayBuffer = <ArrayBuffer>this.result;
             if (arrayBuffer) {
-                var byteArray = new Uint8Array(arrayBuffer);
-                var documentHash = ethers.utils.keccak256(byteArray);
+                const byteArray = new Uint8Array(arrayBuffer);
+                const documentHash = ethers.utils.keccak256(byteArray);
+
+                documentInputContextService.update(file.name);
                 router.navigateByUrl('/document/' + documentHash);
             }
         }

@@ -65,3 +65,17 @@ mat-form-field.amount div.mat-form-field-suffix {
     margin-top: 5px;
     margin-left: 5px;
 }
+
+/* workaround: only works in global styles */
+mat-form-field.document-detail_document-input .mat-form-field-wrapper {
+    padding: 0px;
+}
+
+mat-form-field.document-detail_document-input .mat-form-field-label-wrapper {
+    margin-top: -10px;
+}
+
+/* workaround: only works in global styles */
+mat-form-field.document-detail_document-input .mat-form-field-infix {
+    padding: 5px;
+}

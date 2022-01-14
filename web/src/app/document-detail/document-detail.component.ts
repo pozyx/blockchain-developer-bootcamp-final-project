@@ -1,15 +1,17 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { FormControl, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatChipInputEvent } from '@angular/material/chips';
+import { NgxFileDropEntry, FileSystemFileEntry } from 'ngx-file-drop';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
 import { Subscription } from 'rxjs';
 import { ethers } from 'ethers';
 import { RelayProvider } from '@opengsn/provider/dist';
 import { EthereumConnectionContextService } from '../ethereum-connection-context.service';
+import { DocumentInputContextService } from '../document-input-context.service';
 import { Mode as AddressOrHashMode } from '../address-or-hash/address-or-hash.component';
 import { ProviderRpcError } from '../common-types';
 
@@ -126,6 +128,12 @@ export class DocumentDetailComponent implements OnInit {
     CertificationState = CertificationState;
     AddressOrHash = AddressOrHashMode;
 
+    get openedFileName() {
+        return this.documentInputContextService.openedFileName;
+    }
+
+    openedFileNameRequiredHighlight : boolean = false;
+
     documentHash: string | null = null;
     certificationState: CertificationState | null = null;
     submitter: string | null = null;
@@ -146,8 +154,10 @@ export class DocumentDetailComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private ethereumConnectionContextService: EthereumConnectionContextService,
+        private documentInputContextService: DocumentInputContextService,
         private snackBar: MatSnackBar,
         private router: Router,
+        private ngZone: NgZone,
         private dialog: MatDialog) {
         this.ethereumConnectionContextServiceSubscription =
             ethereumConnectionContextService.isEthereumConnectionReady$.subscribe(val => {
@@ -161,13 +171,56 @@ export class DocumentDetailComponent implements OnInit {
             this.loadDocument();
     }
 
+    handleSelectFile(event: Event) {
+        let fileList = (event.currentTarget as HTMLInputElement).files;
+        if (fileList && fileList.length == 1) {
+            let file = fileList.item(0);
+            if (file)
+                this.selectFile(file);
+        }
+    }
+
+    handleDropFile(fileList: NgxFileDropEntry[]) {
+        if (fileList.length == 1) {
+            let droppedFile = fileList[0];
+            if (droppedFile.fileEntry.isFile) {
+                (droppedFile.fileEntry as FileSystemFileEntry)
+                    .file((file: File) =>
+                        this.ngZone.run(() =>
+                            this.selectFile(file)));
+            }
+        }
+    }
+
+    private selectFile(file: File) {
+        const reader = new FileReader();
+        const self = this;
+
+        reader.onload = async function () {
+            const arrayBuffer = <ArrayBuffer>this.result;
+            if (arrayBuffer) {
+                const byteArray = new Uint8Array(arrayBuffer);
+                const documentHash = ethers.utils.keccak256(byteArray);
+
+                self.documentInputContextService.update(file.name);
+
+                if (documentHash != self.documentHash) {
+                    self.showMessage('Provided document is not matching hash of current document. Loading this document instead...');
+                    await self.router.navigateByUrl('/document/' + documentHash);
+                    self.loadDocument();
+                }
+            }
+        }
+        reader.readAsArrayBuffer(file);
+    }
+
     private async loadDocument() {
         try {
             if (this.isBusy) return;
             this.isBusy = true;
 
             this.documentHash = this.route.snapshot.params['documentHash'];
-            // console.log('documentHash', this.documentHash);
+            //console.log('documentHash', this.documentHash);
 
             this.selectedAddress = await this.ethereumConnectionContextService.web3Signer!.getAddress();
 
@@ -365,6 +418,7 @@ export class DocumentDetailComponent implements OnInit {
     }
 
     submitDocument() {
+        if(!this.checkDocumentPresent()) return;
         this.dialog.open(
             SubmitDocumentConfirmationDialog,
             { data: this.signatoriesToSubmit })
@@ -384,6 +438,7 @@ export class DocumentDetailComponent implements OnInit {
     }
 
     signDocument(etherless: boolean) {
+        if(!this.checkDocumentPresent()) return;
         this.dialog.open(
             SignDocumentConfirmationDialog,
             { data: etherless })
@@ -429,6 +484,7 @@ export class DocumentDetailComponent implements OnInit {
     }
 
     fundSigning() {
+        if(!this.checkDocumentPresent()) return;
         this.dialog.open(
             FundSigningConfirmationDialog)
             .afterClosed()
@@ -447,6 +503,7 @@ export class DocumentDetailComponent implements OnInit {
     }
 
     withdrawSigningBalance() {
+        if(!this.checkDocumentPresent()) return;
         this.dialog.open(
             WithdrawSigningBalanceConfirmationDialog,
             { data: this.formattedSigningBalance })
@@ -461,6 +518,19 @@ export class DocumentDetailComponent implements OnInit {
                         "Withdrawal of document signing balance");
                 }
             });
+    }
+
+    private checkDocumentPresent() : boolean{
+        if (this.openedFileName == null) {
+            this.showMessage("Please provide the document first!");
+            this.openedFileNameRequiredHighlight = true;
+            new Promise(r => setTimeout(r, 2000))
+                .then(() => {
+                    this.openedFileNameRequiredHighlight = false;
+            });
+            return false;
+        }
+        return true;
     }
 
     private async executeTransaction(

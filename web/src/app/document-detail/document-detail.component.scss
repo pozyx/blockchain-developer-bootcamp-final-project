@@ -19,7 +19,17 @@ mat-icon {
 }
 
 app-address-or-hash.document {
-    margin-left: 5px;
+    margin: 0px 20px 0px 5px;
+}
+
+.select-file-container {
+    display: flex;
+    align-items: center;
+}
+
+mat-form-field.document-detail_document-input {
+    width: 300px;
+    margin: 0px 10px 0px 10px;
 }
 
 .spacer {
