@@ -140,6 +140,7 @@ Deployed web app location: [ethNOS.surge.sh](https://ethnos.surge.sh/)
 - [Design pattern decisions](design_pattern_decisions.md)
 - [Avoiding common attacks](avoiding_common_attacks.md)
 - [Address of the deployed contract](deployed_address.txt)
+- [Screencast - short demo of functionality](https://youtu.be/ju_UNb-FZPA)
 - Public Ethereum account for certification: 0x6fBA66b8E73aEA05A9B050ba8Df2e14A1684fdF7
 
 ### Ideas for future improvements
