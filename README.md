@@ -47,19 +47,90 @@ Note: "Uploading document" in this context means only hashing the document on cl
 
 ## Getting started
 
-### Run the app
+### Running the app
 
 Deployed web app location: [ethNOS.surge.sh](https://ethnos.surge.sh/)
 
-Supported networks are Rinkeby and localhost:8545.
+*Supported networks are `Rinkeby` and `localhost:8545.`*
 
 ### Repository structure
 
 - [contracts](contracts)
   - [EthNOS.sol](contracts/EthNOS.sol) - main contract
-  - [EthNOSPaymaster.sol](contracts/EthNOSPaymaster.sol) - GSN paymaster for above
+  - [EthNOSPaymaster.sol](contracts/EthNOSPaymaster.sol) - GSN paymaster contract for above
 - [migrations](migrations), [test](test) - as per usual Truffle convention
 - [web](web) - web app front-end (Angular)
+
+### Prerequisites and repository initialization
+
+- `Linux`, `Mac` or `WSL2` (Some convenience scripts do not work with vanilla `Windows` setup)
+- Install `LTS` (not `latest`) version of `Node.js` and `npm` (tested with `Node.js` ver. `16.13.2` and `npm` ver. `8.3.1`) - this can by done as follows:
+  - [install nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+  - `nvm install --lts`
+  - `nvm install-latest-npm`
+- Install required global tools:
+  - `npm install -g yarn`
+  - `npm install -g truffle`
+  - `npm install -g @angular/cli`
+- Clone the repository and install dependencies:
+  - `git clone https://github.com/pozyx/blockchain-developer-bootcamp-final-project.git`
+  - `cd blockchain-developer-bootcamp-final-project`
+  - `yarn`
+  - `cd web`
+  - `yarn`
+- [optional] Create [`.env`](https://github.com/motdotla/dotenv) file in repository root with your testing wallet mnemonic and registered [Infura](https://infura.io/) API key
+  - If set:
+    - For convenience, your wallet will be pre-funded with 1 ETH when running locally
+    - You will be able to deploy the contracts
+  - Format of `.env` file content:
+    ```
+    MNEMONIC=[YOUR_MNEMONIC]
+    INFURA_API_KEY=[YOUR_INFURA_API_KEY]
+    ```
+
+### Running tests
+
+`yarn test`
+- unit tests thoroughly covering all contract functionality except etherless signing
+- script starts `ganache-cli` (port: `8545`), deploys the contract locally and runs tests using `truffle`
+
+`yarn test-with-gsn`
+- unit tests thoroughly covering all contract functionality including etherless signing
+- script starts `ganache-cli` (port: `8545`), `gsn` (random port), deploys the contract locally (including GSN paymaster contract) and runs tests using `truffle`
+
+### Running the contract and app locally
+
+`yarn start`
+- local run of the contract without etherless signing functionality
+- script starts `ganache-cli` (port: `8545`), deploys the contract locally, updates contract ABI in web project and runs truffle console
+- if wallet mnemonic is present in [`.env`](https://github.com/motdotla/dotenv) file, your wallet will be pre-funded with 1 ETH
+
+`yarn start-with-gsn`
+- local run of the contract including etherless signing functionality
+- script starts `ganache-cli` (port: `8545`), `gsn` (random port), deploys the contract locally (including GSN paymaster contract), updates contract ABI in web project and runs truffle console
+- if wallet mnemonic is present in [`.env`](https://github.com/motdotla/dotenv) file, your wallet will be pre-funded with 1 ETH
+- On WSL systems, etherless transactions may not work due to WSL networking setup (local relayer cannot be reached from browser).
+
+`yarn start` in [web](web) directory
+- local run of web app
+- navigate to (http://localhost:4200/)
+- in MetaMask, switch network to `localhost:8545` to connect to local network started with either command above, or to `Rinkeby` public testnet
+- If you get `TXRejectedError` when sending a transaction, reset your Metamask account from Advanced settings.
+
+### Deploying the contract and app
+
+`yarn deploy-rinkeby`
+- deployment of contracts to `Rinkeby` public testnet
+- script deploys the contracts (older version of contracts are ignored) and updates contract ABI in web project
+- [`.env`](https://github.com/motdotla/dotenv) file filled as described above is required
+
+`yarn deploy-mainnet`
+- deployment of contracts to mainnet
+- script deploys the contracts and updates contract ABI in web project
+- [`.env`](https://github.com/motdotla/dotenv) file filled as described above is required
+
+`yarn deploy` in [web](web) directory
+- deployment of web app to [ethNOS.surge.sh](https://ethnos.surge.sh/)
 
 ## Other
 
