@@ -46,8 +46,7 @@ module.exports = async function (deployer, network, accounts) {
         await ethNOS.setTrustedForwarder(forwarder);
         await ethNOS.setEthNOSPaymaster(ethNOSPaymaster.address)
 
-        // TODO: Use TokenGasCalculator to calculate these values (they depend on actual code of postRelayedCall).
-        const postGasUsage = 42;
+        const postGasUsage = 12500; // TODO: this is only rough estimation based on experimentation
         await ethNOSPaymaster.setPostGasUsage(postGasUsage);
         await ethNOSPaymaster.setRelayHub(relayHub);
         await ethNOSPaymaster.setTrustedForwarder(forwarder);
